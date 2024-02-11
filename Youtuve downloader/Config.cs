@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text;
@@ -32,7 +31,7 @@ namespace Youtube_downloader
         {
             if (!File.Exists(configPath)) return null;
 
-            return File.ReadAllText(configPath).Split('\n').FirstOrDefault(s => s.StartsWith(key + '=', StringComparison.InvariantCultureIgnoreCase)).Split('=').Last();
+            return File.ReadAllText(configPath).Split('\n').FirstOrDefault(s => s.StartsWith(key + '=', StringComparison.InvariantCultureIgnoreCase)).Split('=').Last().Trim('\r');
         }
     }
 }

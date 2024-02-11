@@ -42,12 +42,7 @@ namespace Youtuve_downloader
             wc.DownloadProgressChanged += (s, e) => DownloadProgressBar.Value = e.ProgressPercentage * 10;
             wc.DownloadFileCompleted += (s, e) => DownloadProgressBar.Value = 0;
         }
-
-        private void YoutubeLinkTextBox_MouseClick(object sender, MouseEventArgs e)
-        {
-            YoutubeLinkTextBox.SelectAll();
-        }
-
+        private void YoutubeLinkTextBox_DoubleClick(object sender, EventArgs e) => YoutubeLinkTextBox.SelectAll();
         private async void DownloadButton_Click(object sender, EventArgs e)
         {
             if (currentVideo == null) return;
@@ -122,9 +117,7 @@ namespace Youtuve_downloader
 
                 long videoBytesSize = streamInfo.Size.Bytes;
                 long audioBytesSize = audioStreamInfo.Size.Bytes;
-
                 double totalDataSize = videoBytesSize + audioBytesSize;
-
                 double videoPercentage = (videoBytesSize / totalDataSize) * 1000;
                 double audioPercentage = (audioBytesSize / totalDataSize) * 1000;
 
@@ -154,16 +147,22 @@ namespace Youtuve_downloader
             UpdateStreams();
         }
 
-        private static string GetVideoID(string url)
-        {
-            return url.Contains("v=") ? url.Split('?').Last().Split('&').First(s => s.StartsWith("v=", StringComparison.InvariantCultureIgnoreCase)).Split('=')[1] : url.Split('?')[0].Split('/').Last();
-        }
-
+        private static string GetVideoID(string url) => url.Contains("v=") ? url.Split('?').Last().Split('&').First(s => s.StartsWith("v=", StringComparison.InvariantCultureIgnoreCase)).Split('=')[1] : url.Split('?')[0].Split('/').Last();
         private async void YoutubeLinkTextBox_TextChanged(object sender, EventArgs e)
         {
-            YoutubeLinkTextBox.Text = GetVideoID(YoutubeLinkTextBox.Text);
+            DownloadButton.Enabled = false;
 
-            currentVideo = await youtube.Videos.GetAsync(YoutubeLinkTextBox.Text);
+            try
+            {
+                YoutubeLinkTextBox.Text = GetVideoID(YoutubeLinkTextBox.Text);
+
+                currentVideo = await youtube.Videos.GetAsync(YoutubeLinkTextBox.Text);
+            }
+            catch(Exception ex)
+            {
+                MessageBox.Show("Error cannot find the video by the id\n\n" + ex.ToString(), Application.ProductName, MessageBoxButtons.OK, MessageBoxIcon.Error);
+                return;
+            }
 
             if (currentVideo != null)
             {
@@ -186,6 +185,8 @@ namespace Youtuve_downloader
                 VideoFotoPictureBox.Image = Image.FromStream(await (new WebClient()).OpenReadTaskAsync(new Uri(thumbnailUrl)));
 
                 UpdateStreams();
+
+                DownloadButton.Enabled = true;
             }
         }
 
@@ -234,13 +235,19 @@ namespace Youtuve_downloader
 
         private static string ffmepgTempPath = Path.Combine(Path.GetTempPath(), "ffmepg.exe");
 
-        private static async Task CheckAndDownloadFfmepg()
+        private async Task CheckAndDownloadFfmepg()
         {
             if (!File.Exists(ffmepgTempPath))
             {
-                if (MessageBox.Show("FFMEPG is not downloaded you want to download it to temp files?", Application.ProductName, MessageBoxButtons.OKCancel, MessageBoxIcon.Question) != DialogResult.OK) return;
+                if (MessageBox.Show("FFMPEG is not downloaded you want to download it to temp files?", Application.ProductName, MessageBoxButtons.OKCancel, MessageBoxIcon.Question) != DialogResult.OK)
+                {
+                    FormatComboBox.SelectedIndex++;
+                    return;
+                }
 
                 await wc.DownloadFileTaskAsync("https://raw.githubusercontent.com/Mrgaton/FFMEPGDownload/main/ffmpeg.exe", ffmepgTempPath);
+
+                MessageBox.Show("Now you can download music videos in very high quality with sound", Application.ProductName, MessageBoxButtons.OK, MessageBoxIcon.Information);
             }
         }
 
@@ -264,6 +271,8 @@ namespace Youtuve_downloader
             await proc.WaitForExitAsync();
         }
 
+
+        // old crapy code
         /*private async void DownloadFileWithProgress(string DownloadLink, string PathDe, bool WithLabel, ProgressBar LAbelsita)
         {
             DownloadButton.Text = "Descargando";

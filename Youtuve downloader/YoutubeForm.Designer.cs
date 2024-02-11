@@ -49,8 +49,8 @@ namespace Youtuve_downloader
             this.YoutubeLinkTextBox.Name = "YoutubeLinkTextBox";
             this.YoutubeLinkTextBox.Size = new System.Drawing.Size(221, 35);
             this.YoutubeLinkTextBox.TabIndex = 0;
-            this.YoutubeLinkTextBox.MouseClick += new System.Windows.Forms.MouseEventHandler(this.YoutubeLinkTextBox_MouseClick);
             this.YoutubeLinkTextBox.TextChanged += new System.EventHandler(this.YoutubeLinkTextBox_TextChanged);
+            this.YoutubeLinkTextBox.DoubleClick += new System.EventHandler(this.YoutubeLinkTextBox_DoubleClick);
             // 
             // YoutubeLinkLabel
             // 
@@ -84,6 +84,7 @@ namespace Youtuve_downloader
             // 
             // DownloadButton
             // 
+            this.DownloadButton.Enabled = false;
             this.DownloadButton.Font = new System.Drawing.Font("Microsoft Sans Serif", 13.8F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.DownloadButton.Location = new System.Drawing.Point(475, 7);
             this.DownloadButton.Margin = new System.Windows.Forms.Padding(2);
