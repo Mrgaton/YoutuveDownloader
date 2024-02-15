@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Data;
 using System.Diagnostics;
 using System.Drawing;
 using System.IO;
@@ -42,7 +41,9 @@ namespace Youtuve_downloader
             wc.DownloadProgressChanged += (s, e) => DownloadProgressBar.Value = e.ProgressPercentage * 10;
             wc.DownloadFileCompleted += (s, e) => DownloadProgressBar.Value = 0;
         }
+
         private void YoutubeLinkTextBox_DoubleClick(object sender, EventArgs e) => YoutubeLinkTextBox.SelectAll();
+
         private async void DownloadButton_Click(object sender, EventArgs e)
         {
             if (currentVideo == null) return;
@@ -81,7 +82,7 @@ namespace Youtuve_downloader
                 saveFileDialog1.Filter = "Mp4 Video | *." + FormatComboBox.Text;
             }
 
-            saveFileDialog1.Title = "Save question";
+            saveFileDialog1.Title = "Interesting question";
             saveFileDialog1.FileName = SanitizedFileName(currentVideo.Title + "." + streamInfo.Bitrate + "." + fileExtension);
 
             if (saveFileDialog1.ShowDialog() != DialogResult.OK) return;
@@ -148,6 +149,7 @@ namespace Youtuve_downloader
         }
 
         private static string GetVideoID(string url) => url.Contains("v=") ? url.Split('?').Last().Split('&').First(s => s.StartsWith("v=", StringComparison.InvariantCultureIgnoreCase)).Split('=')[1] : url.Split('?')[0].Split('/').Last();
+
         private async void YoutubeLinkTextBox_TextChanged(object sender, EventArgs e)
         {
             DownloadButton.Enabled = false;
@@ -158,7 +160,7 @@ namespace Youtuve_downloader
 
                 currentVideo = await youtube.Videos.GetAsync(YoutubeLinkTextBox.Text);
             }
-            catch(Exception ex)
+            catch (Exception ex)
             {
                 MessageBox.Show("Error cannot find the video by the id\n\n" + ex.ToString(), Application.ProductName, MessageBoxButtons.OK, MessageBoxIcon.Error);
                 return;
@@ -270,7 +272,6 @@ namespace Youtuve_downloader
 
             await proc.WaitForExitAsync();
         }
-
 
         // old crapy code
         /*private async void DownloadFileWithProgress(string DownloadLink, string PathDe, bool WithLabel, ProgressBar LAbelsita)
