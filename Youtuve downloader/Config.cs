@@ -31,7 +31,7 @@ namespace Youtube_downloader
         {
             if (!File.Exists(configPath)) return null;
 
-            return File.ReadAllText(configPath).Split('\n').FirstOrDefault(s => s.StartsWith(key + '=', StringComparison.InvariantCultureIgnoreCase)).Split('=').Last().Trim('\r');
+            return File.ReadAllText(configPath).Split('\n').FirstOrDefault(s => s.StartsWith(key + '=', StringComparison.InvariantCultureIgnoreCase))?.Split('=').LastOrDefault().Trim('\r');
         }
     }
 }
