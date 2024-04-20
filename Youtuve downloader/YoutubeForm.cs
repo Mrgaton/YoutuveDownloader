@@ -40,7 +40,6 @@ namespace Youtuve_downloader
             if (bool.TryParse(Config.Get("ReEncodeAudio"), out bool mp4a)) ReEncodeAudioCheckBox.Checked = mp4a;
 
             wc.DownloadProgressChanged += (s, e) => DownloadProgressBar.Value = e.ProgressPercentage * 10;
-
             wc.DownloadFileCompleted += (s, e) => DownloadProgressBar.Value = 0;
         }
 
@@ -77,7 +76,7 @@ namespace Youtuve_downloader
 
             if (FormatComboBox.Text == "mp3")
             {
-                saveFileDialog1.Filter = "Mp3 Music | *.mp3";
+                saveFileDialog1.Filter = "Mp3 Audio | *.mp3";
             }
             else if (FormatComboBox.Text == "mp4" || FormatComboBox.Text == "mux" || FormatComboBox.Text == "com")
             {
@@ -85,7 +84,7 @@ namespace Youtuve_downloader
             }
 
             saveFileDialog1.Title = "Interesting question";
-            saveFileDialog1.FileName = SanitizedFileName(currentVideo.Title + "." + streamInfo.Bitrate + "." + fileExtension);
+            saveFileDialog1.FileName = SanitizedFileName(currentVideo.Title + "_" + (int)((streamInfo).Bitrate.KiloBitsPerSecond) + "kbps." + fileExtension);
 
             if (saveFileDialog1.ShowDialog() != DialogResult.OK) return;
 
@@ -223,6 +222,7 @@ namespace Youtuve_downloader
                     ReEncodeAudioCheckBox.Enabled = false;
                     break;
 
+                case "mux":
                 case "mp4":
                     VideoComboBox.Enabled = true;
                     AudioComboBox.Enabled = false;
@@ -230,14 +230,8 @@ namespace Youtuve_downloader
 
                     break;
 
-                case "mux":
-                    VideoComboBox.Enabled = true;
-                    AudioComboBox.Enabled = false;
-                    ReEncodeAudioCheckBox.Enabled = false;
-                    break;
-
                 case "com":
-                    CheckAndDownloadFfmepg();
+                    await CheckAndDownloadFfmepg();
 
                     VideoComboBox.Enabled = AudioComboBox.Enabled = true;
                     ReEncodeAudioCheckBox.Enabled = true;
@@ -268,7 +262,7 @@ namespace Youtuve_downloader
                     return;
                 }
 
-                await wc.DownloadFileTaskAsync("https://raw.githubusercontent.com/Mrgaton/FFMEPGDownload/main/ffmpeg.exe", ffmepgTempPath);
+                await wc.DownloadFileTaskAsync("https://raw.githubusercontent.com/Mrgaton/FFMEPGDownload/main/ffmpeg-7.0-full_build/ffmpeg.exe", ffmepgTempPath);
 
                 MessageBox.Show("Now you can download music videos in very high quality with sound", Application.ProductName, MessageBoxButtons.OK, MessageBoxIcon.Information);
             }
@@ -282,7 +276,7 @@ namespace Youtuve_downloader
             {
                 FileName = ffmepgTempPath,
                 Arguments = $" -i \"{videoPath}\" -i \"{audioPath}\" -c:a {(ReEncodeAudioCheckBox.Checked ? "aac" : "copy")} -c:v copy -y \"{outputFile}\"",
-                CreateNoWindow = false,
+                CreateNoWindow = true,
                 //RedirectStandardError = true,
                 //RedirectStandardInput = true,
                 //RedirectStandardOutput = true,
