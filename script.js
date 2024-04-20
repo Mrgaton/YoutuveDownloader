@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Mrgaton youtube downloader
 // @namespace    http://tampermonkey.net/
-// @version      2024-04-23
+// @version      2024-04-24
 // @description  Download using crun and my awesome program
 // @author       Mrghaton
 // @match        https://www.youtube.com/watch?v=*
@@ -17,19 +17,18 @@ const youtubeDownloadSVG =
 	'use strict';
 
 	window.addEventListener('load', (event) => {
-	let buttons = document.getElementsByClassName(
-		'yt-spec-button-shape-next yt-spec-button-shape-next--tonal yt-spec-button-shape-next--mono yt-spec-button-shape-next--size-m yt-spec-button-shape-next--icon-leading'
-	);
+		let buttons = document.getElementsByClassName(
+			'yt-spec-button-shape-next yt-spec-button-shape-next--tonal yt-spec-button-shape-next--mono yt-spec-button-shape-next--size-m yt-spec-button-shape-next--icon-leading'
+		);
 
-	for (let elem in buttons) {
-		const button = buttons[elem];
+		for (let elem in buttons) {
+			const button = buttons[elem];
 
-		if (button.innerHTML) {
-			button.addEventListener('click', () => downloadClicked(button));
-			console.log(button);
+			if (button.innerHTML) {
+				button.addEventListener('click', () => downloadClicked(button));
+				console.log(button);
+			}
 		}
-	}
-
 	});
 
 	new MutationObserver(nodeAddedCallback).observe(document, {
