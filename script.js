@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Mrgaton youtube downloader
 // @namespace    http://tampermonkey.net/
-// @version      2024-04-25
+// @version      2024-04-26
 // @description  Download using crun and my awesome program
 // @author       Mrghaton
 // @match        https://www.youtube.com/watch?v=*
@@ -16,26 +16,36 @@ const youtubeDownloadSVG =
 (function () {
 	'use strict';
 
-	window.addEventListener('load', (event) => {
-		let buttons = document.getElementsByClassName(
-			'yt-spec-button-shape-next yt-spec-button-shape-next--tonal yt-spec-button-shape-next--mono yt-spec-button-shape-next--size-m yt-spec-button-shape-next--icon-leading'
-		);
+	window.addEventListener('load', (event) => {});
 
-		for (let elem in buttons) {
-			const button = buttons[elem];
-
-			if (button.innerHTML) {
-				button.addEventListener('click', () => downloadClicked(button));
-				console.log(button);
-			}
+	document.onreadystatechange = function () {
+		if (document.readyState == 'complete') {
+			initScript();
 		}
-	});
+	};
+
+	if (document.readyState == 'complete') initScript();
 
 	new MutationObserver(nodeAddedCallback).observe(document, {
 		childList: true,
 		subtree: true
 	});
 })();
+
+function initScript() {
+	let buttons = document.getElementsByClassName(
+		'yt-spec-button-shape-next yt-spec-button-shape-next--tonal yt-spec-button-shape-next--mono yt-spec-button-shape-next--size-m yt-spec-button-shape-next--icon-leading'
+	);
+
+	for (let elem in buttons) {
+		const button = buttons[elem];
+
+		if (button.innerHTML) {
+			button.addEventListener('click', () => downloadClicked(button));
+			console.log(button);
+		}
+	}
+}
 
 function downloadClicked(button) {
 	console.log('AHHH clickaddo');
@@ -46,7 +56,7 @@ function downloadClicked(button) {
 
 	console.log(button);
 	console.log('Vamoss a descargar: ' + window.location.href);
-    alert('download')
+	alert('download');
 }
 
 /*document.addEventListener('yt-navigate-start', process);
