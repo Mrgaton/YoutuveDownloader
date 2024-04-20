@@ -1,7 +1,8 @@
 // ==UserScript==
 // @name         Mrgaton youtube downloader
 // @namespace    http://tampermonkey.net/
-// @version      2024-04-26
+// @require      https://gato.ovh/CDN/Scripts/CRUN.js
+// @version      2024-04-27
 // @description  Download using crun and my awesome program
 // @author       Mrghaton
 // @match        https://www.youtube.com/watch?v=*
@@ -13,18 +14,18 @@
 const youtubeDownloadSVG =
 	'<path d="M17 18v1H6v-1h11zm-.5-6.6-.7-.7-3.8 3.7V4h-1v10.4l-3.8-3.8-.7.7 5 5 5-4.9z">';
 
-(function () {
+(async function () {
 	'use strict';
 
-	window.addEventListener('load', (event) => {});
+	while (
+		!document.querySelector(
+			'ytd-menu-renderer.style-scope.ytd-watch-metadata'
+		)
+	) {
+		await new Promise((r) => setTimeout(r, 1500));
+	}
 
-	document.onreadystatechange = function () {
-		if (document.readyState == 'complete') {
-			initScript();
-		}
-	};
-
-	if (document.readyState == 'complete') initScript();
+	await initScript();
 
 	new MutationObserver(nodeAddedCallback).observe(document, {
 		childList: true,
@@ -32,7 +33,8 @@ const youtubeDownloadSVG =
 	});
 })();
 
-function initScript() {
+async function initScript() {
+	console.log('Installing script');
 	let buttons = document.getElementsByClassName(
 		'yt-spec-button-shape-next yt-spec-button-shape-next--tonal yt-spec-button-shape-next--mono yt-spec-button-shape-next--size-m yt-spec-button-shape-next--icon-leading'
 	);
@@ -56,7 +58,9 @@ function downloadClicked(button) {
 
 	console.log(button);
 	console.log('Vamoss a descargar: ' + window.location.href);
-	alert('download');
+
+	console.log(CrunHelper);
+	confirm('Press a button!\nEither OK or Cancel.');
 }
 
 /*document.addEventListener('yt-navigate-start', process);
@@ -100,3 +104,6 @@ function nodeAddedCallback(mutationList, observer) {
 		}
 	});
 }
+
+
+export default initScript;
