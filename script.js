@@ -15,6 +15,7 @@ const youtubeDownloadSVG =
 
 (function () {
 	'use strict';
+
 	//window.addEventListener('load', (event) => {
 	let buttons = document.getElementsByClassName(
 		'yt-spec-button-shape-next yt-spec-button-shape-next--tonal yt-spec-button-shape-next--mono yt-spec-button-shape-next--size-m yt-spec-button-shape-next--icon-leading'
@@ -30,24 +31,25 @@ const youtubeDownloadSVG =
 	}
 
 	//});
+
+	new MutationObserver(nodeAddedCallback).observe(document, {
+		childList: true,
+		subtree: true
+	});
 })();
 
 function downloadClicked(button) {
 	console.log('AHHH clickaddo');
 
+	console.log(button.innerHTML.includes(youtubeDownloadSVG));
+
 	if (!button.innerHTML.includes(youtubeDownloadSVG)) return;
 
-	document.getElementsByClassName(
-		'style-scope ytd-popup-container'
-	)[4].style.display = 'none';
-    
 	console.log(button);
+	console.log('Vamoss a descargar: ' + window.location.href);
 }
 
-document.addEventListener('yt-navigate-start', process);
-// Choose a different event depending on when you want to apply the change
-// document.addEventListener('yt-navigate-finish', process);
-
+/*document.addEventListener('yt-navigate-start', process);
 if (document.body) process();
 else document.addEventListener('DOMContentLoaded', process);
 
@@ -58,7 +60,7 @@ function process() {
 	var seconds = [].reduce.call(
 		document.getElementsByClassName('timestamp'),
 		function (sum, ts) {
-			var minsec = ts.textContent.split(':');
+			const minsec = ts.textContent.split(':');
 			return sum + minsec[0] * 60 + minsec[1] * 1;
 		},
 		0
@@ -67,11 +69,24 @@ function process() {
 		console.warn('Got no timestamps. Empty playlist?');
 		return;
 	}
-	var timeHMS = new Date(seconds * 1000)
+	const timeHMS = new Date(seconds * 1000)
 		.toUTCString()
 		.split(' ')[4]
 		.replace(/^[0:]+/, ''); // trim leading zeroes
 	document
 		.querySelector('.pl-header-details')
 		.insertAdjacentHTML('beforeend', '<li>Length: ' + timeHMS + '</li>');
+}*/
+
+function nodeAddedCallback(mutationList, observer) {
+	mutationList.forEach((mutation) => {
+		if (mutation.type === 'childList') {
+			mutation.addedNodes.forEach((node) => {
+				if (node.nodeName === 'YTD-OFFLINE-PROMO-RENDERER') {
+					console.log(mutation);
+					node.remove(); // Remove the node
+				}
+			});
+		}
+	});
 }
