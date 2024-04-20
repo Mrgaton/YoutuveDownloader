@@ -6,7 +6,7 @@
 // @author       Mrghaton
 // @match        https://www.youtube.com/watch?v=*
 // @icon         https://www.google.com/s2/favicons?sz=64&domain=youtube.com
-// @updateURL    https://github.com/Mrgaton/YoutuveDownloader/raw/master/script.js
+// @updateURL    https://raw.githubusercontent.com/Mrgaton/YoutuveDownloader/master/script.js
 // @grant        none
 // ==/UserScript==
 
