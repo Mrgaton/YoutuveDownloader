@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Mrgaton youtube downloader
 // @namespace    http://tampermonkey.net/
-// @require      https://gato.ovh/CDN/Scripts/CRUN.js
+// @require      https://gato.ovh/CDN/Scripts/CrUn.jS
 // @version      2024-04-27
 // @description  Download using crun and my awesome program
 // @author       Mrghaton
@@ -17,12 +17,16 @@ const youtubeDownloadSVG =
 (async function () {
 	'use strict';
 
+	let time = 200;
+
 	while (
 		!document.querySelector(
 			'ytd-menu-renderer.style-scope.ytd-watch-metadata'
 		)
 	) {
-		await new Promise((r) => setTimeout(r, 1500));
+		await new Promise((r) => setTimeout(r, time));
+
+		time += 200;
 	}
 
 	await initScript();
@@ -35,10 +39,19 @@ const youtubeDownloadSVG =
 
 async function initScript() {
 	console.log('Installing script');
-	let buttons = document.getElementsByClassName(
-		'yt-spec-button-shape-next yt-spec-button-shape-next--tonal yt-spec-button-shape-next--mono yt-spec-button-shape-next--size-m yt-spec-button-shape-next--icon-leading'
+
+	addElements(
+		document.getElementsByClassName(
+			'yt-spec-button-shape-next yt-spec-button-shape-next--tonal yt-spec-button-shape-next--mono yt-spec-button-shape-next--size-m yt-spec-button-shape-next--icon-leading'
+		)
 	);
 
+	addElements(
+		document.getElementsByClassName('style-scope ytd-menu-popup-renderer')
+	);
+}
+
+function addElements(buttons) {
 	for (let elem in buttons) {
 		const button = buttons[elem];
 
@@ -50,7 +63,7 @@ async function initScript() {
 }
 
 function downloadClicked(button) {
-	console.log('AHHH clickaddo');
+	console.log('Youtube button clicked ' + button.label);
 
 	console.log(button.innerHTML.includes(youtubeDownloadSVG));
 
@@ -60,7 +73,7 @@ function downloadClicked(button) {
 	console.log('Vamoss a descargar: ' + window.location.href);
 
 	console.log(CrunHelper);
-	confirm('Press a button!\nEither OK or Cancel.');
+	confirm('Are you want to download this video?\nPress OK or Cancel.');
 }
 
 /*document.addEventListener('yt-navigate-start', process);
@@ -97,7 +110,7 @@ function nodeAddedCallback(mutationList, observer) {
 		if (mutation.type === 'childList') {
 			mutation.addedNodes.forEach((node) => {
 				if (node.nodeName === 'YTD-OFFLINE-PROMO-RENDERER') {
-					console.log(mutation);
+					//console.log(mutation);
 					node.remove(); // Remove the node
 				}
 			});
