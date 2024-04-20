@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Mrgaton youtube downloader
 // @namespace    http://tampermonkey.net/
-// @version      2024-04-24
+// @version      2024-04-25
 // @description  Download using crun and my awesome program
 // @author       Mrghaton
 // @match        https://www.youtube.com/watch?v=*
@@ -46,6 +46,7 @@ function downloadClicked(button) {
 
 	console.log(button);
 	console.log('Vamoss a descargar: ' + window.location.href);
+    alert('download')
 }
 
 /*document.addEventListener('yt-navigate-start', process);
