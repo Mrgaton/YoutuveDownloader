@@ -104,6 +104,3 @@ function nodeAddedCallback(mutationList, observer) {
 		}
 	});
 }
-
-
-export default initScript;
