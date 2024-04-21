@@ -6,7 +6,7 @@
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
     <ProjectGuid>{B3B66AD0-CA13-4F35-9188-3D82431CC8C2}</ProjectGuid>
-    <OutputType>WinExe</OutputType>
+    <OutputType>Exe</OutputType>
     <RootNamespace>Youtube_downloader</RootNamespace>
     <AssemblyName>Youtube downloader</AssemblyName>
     <TargetFrameworkVersion>v4.8</TargetFrameworkVersion>

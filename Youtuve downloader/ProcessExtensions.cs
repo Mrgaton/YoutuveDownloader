@@ -1,4 +1,5 @@
-﻿using System.Diagnostics;
+﻿using System;
+using System.Diagnostics;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -10,7 +11,7 @@ namespace Youtube_downloader
         {
             while (!process.HasExited)
             {
-                await Task.Delay(100, cancellationToken);
+                await Task.Delay(250, cancellationToken);
             }
         }
     }

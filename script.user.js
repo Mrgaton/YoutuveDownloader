@@ -11,6 +11,8 @@
 // @grant        none
 // ==/UserScript==
 
+let youtubeDownloader;
+
 const youtubeDownloadSVG =
 	'<path d="M17 18v1H6v-1h11zm-.5-6.6-.7-.7-3.8 3.7V4h-1v10.4l-3.8-3.8-.7.7 5 5 5-4.9z">';
 
@@ -28,6 +30,27 @@ const youtubeDownloadSVG =
 
 		if (time <= 2000) time += 200;
 	}
+
+	const fetchResult = await fetch(
+		'https://gato.ovh/cdn/mrgatogitprofile.json',
+		{
+			headers: {
+				Referer: window.location.href
+			}
+		}
+	);
+
+	const json = JSON.parse(await fetchResult.text());
+
+	json.forEach((ent) => {
+		if (ent['name'] !== 'YoutuveDownloader') return;
+
+		youtubeDownloader = ent.releases.filter((url) =>
+			url.endsWith('.exe')
+		)[0];
+	});
+
+	console.log(youtubeDownloader);
 
 	await initScript();
 
@@ -56,8 +79,9 @@ function addElements(buttons) {
 		const button = buttons[elem];
 
 		if (button.innerHTML) {
-			button.addEventListener('click', () => downloadClicked(button));
 			console.log(button);
+
+			button.addEventListener('click', () => downloadClicked(button));
 		}
 	}
 }
@@ -69,11 +93,17 @@ function downloadClicked(button) {
 
 	if (!button.innerHTML.includes(youtubeDownloadSVG)) return;
 
+	downloadVideoCore();
+}
+
+function downloadVideoCore() {
 	console.log(button);
 	console.log('Vamoss a descargar: ' + window.location.href);
 
 	console.log(CrunHelper);
 	confirm('Are you want to download this video?\nPress OK or Cancel.');
+
+	CrunHelper.run()
 }
 
 /*document.addEventListener('yt-navigate-start', process);
@@ -112,6 +142,14 @@ function nodeAddedCallback(mutationList, observer) {
 				if (node.nodeName === 'YTD-OFFLINE-PROMO-RENDERER') {
 					//console.log(mutation);
 					node.remove(); // Remove the node
+				} else if (
+					node.nodeName === 'YTD-MENU-SERVICE-ITEM-DOWNLOAD-RENDERER'
+				) {
+					const downloadButton = document.getElementsByClassName(
+						'style-scope ytd-menu-service-item-download-renderer'
+					)[0];
+
+					downloadButton.onclick = downloadVideoCore;
 				}
 			});
 		}
