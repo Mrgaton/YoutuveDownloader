@@ -26,7 +26,7 @@ const youtubeDownloadSVG =
 	) {
 		await new Promise((r) => setTimeout(r, time));
 
-		time += 200;
+		if (time <= 2000) time += 200;
 	}
 
 	await initScript();
