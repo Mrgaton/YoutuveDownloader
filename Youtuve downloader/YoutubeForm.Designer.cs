@@ -213,6 +213,7 @@ namespace Youtuve_downloader
             this.Name = "YoutubeForm";
             this.StartPosition = System.Windows.Forms.FormStartPosition.Manual;
             this.Text = "Youtube Downloader By Mrgaton";
+            this.Shown += new System.EventHandler(this.YoutubeForm_Shown);
             ((System.ComponentModel.ISupportInitialize)(this.VideoFotoPictureBox)).EndInit();
             this.ResumeLayout(false);
             this.PerformLayout();

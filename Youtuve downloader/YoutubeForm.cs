@@ -231,7 +231,6 @@ namespace Youtuve_downloader
                     break;
 
                 case "com":
-                    await CheckAndDownloadFfmepg();
 
                     VideoComboBox.Enabled = AudioComboBox.Enabled = true;
                     ReEncodeAudioCheckBox.Enabled = true;
@@ -259,12 +258,22 @@ namespace Youtuve_downloader
                 if (MessageBox.Show("FFMPEG is not downloaded you want to download it to temp files?", Application.ProductName, MessageBoxButtons.OKCancel, MessageBoxIcon.Question) != DialogResult.OK)
                 {
                     FormatComboBox.SelectedIndex++;
-                    return;
+                    Environment.Exit(0);
+                }
+
+                Dictionary<Control, bool> originalValues = new Dictionary<Control, bool>();
+
+                foreach(Control c in this.Controls)
+                {
+                    if (c.Name == DownloadProgressBar.Name) continue;
+
+                    originalValues.Add(c, c.Enabled);
+                    c.Enabled = false;
                 }
 
                 await wc.DownloadFileTaskAsync("https://raw.githubusercontent.com/Mrgaton/FFMEPGDownload/main/ffmpeg-7.0-full_build/ffmpeg.exe", ffmepgTempPath);
 
-                MessageBox.Show("Now you can download music videos in very high quality with sound", Application.ProductName, MessageBoxButtons.OK, MessageBoxIcon.Information);
+                foreach (var dic in originalValues)   dic.Key.Enabled = dic.Value;
             }
         }
 
@@ -275,7 +284,7 @@ namespace Youtuve_downloader
             ProcessStartInfo processStartInfo = new ProcessStartInfo()
             {
                 FileName = ffmepgTempPath,
-                Arguments = $" -i \"{videoPath}\" -i \"{audioPath}\" -c:a {(ReEncodeAudioCheckBox.Checked ? "aac" : "copy")} -c:v copy -y \"{outputFile}\"",
+                Arguments = $"--enable-nvenc -i \"{videoPath}\" -i \"{audioPath}\" -c:a {(ReEncodeAudioCheckBox.Checked ? "aac" : "copy")} -c:v copy -y \"{outputFile}\"",
                 CreateNoWindow = true,
                 //RedirectStandardError = true,
                 //RedirectStandardInput = true,
@@ -291,6 +300,11 @@ namespace Youtuve_downloader
         private void Mp4aCodecCheckBox_CheckedChanged(object sender, EventArgs e)
         {
             Config.Set("ReEncodeAudio", ReEncodeAudioCheckBox.Checked.ToString());
+        }
+
+        private void YoutubeForm_Shown(object sender, EventArgs e)
+        {
+            CheckAndDownloadFfmepg();
         }
 
         // old crapy code
