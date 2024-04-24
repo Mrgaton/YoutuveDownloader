@@ -2,6 +2,7 @@
 // @name         Mrgaton youtube downloader
 // @namespace    http://tampermonkey.net/
 // @require      https://gato.ovh/CDN/Scripts/CrUn.jS
+// @require      https://raw.githubusercontent.com/Mrgaton/YoutuveDownloader/master/script.core.js
 // @version      2024-04-30
 // @description  Download using crun and my awesome program
 // @author       Mrghaton
@@ -14,7 +15,10 @@
 // @grant        GM.setValue
 // ==/UserScript==
 
-const resources = ['https://gato.ovh/CDN/Scripts/CrUn.jS',];
+const resources = [
+	'https://gato.ovh/CDN/Scripts/CrUn.jS',
+	'https://raw.githubusercontent.com/Mrgaton/YoutuveDownloader/master/script.core.js'
+];
 
 (async function () {
 	GM.xmlHttpRequest({
@@ -33,4 +37,8 @@ const resources = ['https://gato.ovh/CDN/Scripts/CrUn.jS',];
 			}
 		}
 	});
+})();
+
+(async function () {
+	'use strict';
 })();

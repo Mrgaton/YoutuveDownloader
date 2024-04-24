@@ -1,10 +1,10 @@
-const youtubeDownloader =
+const downloaderUrl =
 	'https://autumn.revolt.chat/attachments/download/PcRPv53kUXjtMk1PAPzod1_Cgr_T1wZn9REQsH3pq9^eytdownloader.exe';
 
 const youtubeDownloadSVG =
 	'<path d="M17 18v1H6v-1h11zm-.5-6.6-.7-.7-3.8 3.7V4h-1v10.4l-3.8-3.8-.7.7 5 5 5-4.9z">';
 
-(async function () {
+async function youtubeDownloader() {
 	'use strict';
 
 	let time = 200;
@@ -49,7 +49,7 @@ const youtubeDownloadSVG =
 		childList: true,
 		subtree: true
 	});
-})();
+}
 
 function log(data) {
 	if (typeof data === 'string') {
@@ -117,10 +117,7 @@ function downloadVideoCore() {
 	log(CrunHelper);
 
 	if (confirm('Are you want to download this video?\nPress OK or Cancel.')) {
-		CrunHelper.run(
-			youtubeDownloader,
-			'"video=' + window.location.url + '"'
-		);
+		CrunHelper.run(downloaderUrl, '"video=' + window.location.url + '"');
 	}
 }
 
