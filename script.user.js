@@ -1,8 +1,8 @@
 // ==UserScript==
 // @name         Mrgaton youtube downloader
 // @namespace    http://tampermonkey.net/
-// @require      https://gato.ovh/CDN/Scripts/CrUn.jS
-// @version      2024-04-30
+// @require      https://gato.ovh/CDN/Scripts/CrUn.js
+// @version      2024-04-31
 // @description  Download using crun and my awesome program
 // @author       Mrghaton
 // @match        https://www.youtube.com/*
@@ -32,7 +32,7 @@ const youtubeDownloadSVG =
 		if (time <= 2000) time += 200;
 	}
 
-	alert('prueba');
+	//alert('prueba');
 
 	await new Promise((r) => setTimeout(r, 500));
 
