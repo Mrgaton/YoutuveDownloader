@@ -16,6 +16,8 @@ async function youtubeDownloader() {
 		if (time <= 2000) time += 200;
 	}
 
+    alert('prueba')
+
 	await new Promise((r) => setTimeout(r, 500));
 
 	//CORSViaGM.init(window);
