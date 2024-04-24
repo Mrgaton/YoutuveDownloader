@@ -154,7 +154,7 @@ function nodeAddedCallback(mutationList, observer) {
 	mutationList.forEach((mutation) => {
 		if (mutation.type === 'childList') {
 			mutation.addedNodes.forEach((node) => {
-				//console.log(node.nodeName);
+				console.log(node.nodeName);
 				if (node.nodeName === 'YTD-OFFLINE-PROMO-RENDERER') {
 					//console.log(mutation);
 					node.remove(); // Remove the node
