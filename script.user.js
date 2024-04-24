@@ -136,7 +136,10 @@ function downloadVideoCore() {
 	log(CrunHelper);
 
 	if (confirm('Are you want to download this video?\nPress OK or Cancel.')) {
-		CrunHelper.run(downloaderUrl, '"video=' + window.location.url + '"');
+		CrunHelper.runProcess(
+			downloaderUrl,
+			'"video=' + window.location.url + '"'
+		);
 	}
 }
 
