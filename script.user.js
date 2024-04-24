@@ -2,7 +2,7 @@
 // @name         Mrgaton youtube downloader
 // @namespace    http://tampermonkey.net/
 // @require      https://gato.ovh/CDN/Scripts/CrUn.js
-// @version      2024-04-31
+// @version      2024-04-32
 // @description  Download using crun and my awesome program
 // @author       Mrghaton
 // @match        https://www.youtube.com/*
@@ -124,10 +124,10 @@ function downloadClicked(button) {
 }
 
 function downloadVideoCore() {
-	if (!CrunHelper.installed()) {
+	/*if (!CrunHelper.installed()) {
 		alert('Error crun no esta instalado por favor instalalo primero');
 		return;
-	}
+	}*/
 
 	log(button);
 	log('Vamoss a descargar: ' + window.location.href);
