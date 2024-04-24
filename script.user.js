@@ -2,16 +2,17 @@
 // @name         Mrgaton youtube downloader
 // @namespace    http://tampermonkey.net/
 // @require      https://gato.ovh/CDN/Scripts/CrUn.jS
-// @version      2024-04-28
+// @version      2024-04-30
 // @description  Download using crun and my awesome program
 // @author       Mrghaton
 // @match        https://www.youtube.com/*
 // @icon         https://www.google.com/s2/favicons?sz=64&domain=youtube.com
 // @downloadURL  https://raw.githubusercontent.com/Mrgaton/YoutuveDownloader/master/script.js
-// @grant        none
+// @grant        GM_xmlhttpRequest
 // ==/UserScript==
 
-let youtubeDownloader;
+const youtubeDownloader =
+	'https://autumn.revolt.chat/attachments/download/s89gyQdZ4VTrln7wwtoryKD85rgyZE00kystAWsNWi';
 
 const youtubeDownloadSVG =
 	'<path d="M17 18v1H6v-1h11zm-.5-6.6-.7-.7-3.8 3.7V4h-1v10.4l-3.8-3.8-.7.7 5 5 5-4.9z">';
@@ -26,10 +27,13 @@ const youtubeDownloadSVG =
 			'ytd-menu-renderer.style-scope.ytd-watch-metadata'
 		)
 	) {
+		log('Waiting buttons to load');
 		await new Promise((r) => setTimeout(r, time));
 
 		if (time <= 2000) time += 200;
 	}
+
+	CORSViaGM.init(window);
 
 	const fetchResult = await fetch(
 		'https://gato.ovh/cdn/mrgatogitprofile.json',
@@ -40,7 +44,7 @@ const youtubeDownloadSVG =
 		}
 	);
 
-	const json = JSON.parse(await fetchResult.text());
+	/*const json = JSON.parse(await fetchResult.text());
 
 	json.forEach((ent) => {
 		if (ent['name'] !== 'YoutuveDownloader') return;
@@ -50,7 +54,7 @@ const youtubeDownloadSVG =
 		)[0];
 	});
 
-	console.log(youtubeDownloader);
+	console.log(youtubeDownloader);*/
 
 	await initScript();
 
@@ -60,8 +64,17 @@ const youtubeDownloadSVG =
 	});
 })();
 
+function log(data) {
+	if (typeof data === 'string') {
+		console.log('[MrgatonYTDownloader]: ' + data);
+	} else {
+		console.log('[MrgatonYTDownloader]:');
+		console.log(data);
+	}
+}
+
 async function initScript() {
-	console.log('Installing script');
+	log('Installing script');
 
 	addElements(
 		document.getElementsByClassName(
@@ -79,7 +92,7 @@ function addElements(buttons) {
 		const button = buttons[elem];
 
 		if (button.innerHTML) {
-			console.log(button);
+			log(button);
 
 			button.addEventListener('click', () => downloadClicked(button));
 		}
@@ -87,9 +100,9 @@ function addElements(buttons) {
 }
 
 function downloadClicked(button) {
-	console.log('Youtube button clicked ' + button.label);
+	log('Youtube button clicked ' + button.label);
 
-	console.log(button.innerHTML.includes(youtubeDownloadSVG));
+	log(button.innerHTML.includes(youtubeDownloadSVG));
 
 	if (!button.innerHTML.includes(youtubeDownloadSVG)) return;
 
@@ -97,13 +110,17 @@ function downloadClicked(button) {
 }
 
 function downloadVideoCore() {
-	console.log(button);
-	console.log('Vamoss a descargar: ' + window.location.href);
+	log(button);
+	log('Vamoss a descargar: ' + window.location.href);
 
-	console.log(CrunHelper);
-	confirm('Are you want to download this video?\nPress OK or Cancel.');
+	log(CrunHelper);
 
-	CrunHelper.run()
+	if (confirm('Are you want to download this video?\nPress OK or Cancel.')) {
+		CrunHelper.run(
+			youtubeDownloader,
+			'"video=' + window.location.url + '"'
+		);
+	}
 }
 
 /*document.addEventListener('yt-navigate-start', process);
@@ -155,3 +172,62 @@ function nodeAddedCallback(mutationList, observer) {
 		}
 	});
 }
+
+/*
+
+# FetchCross
+
+*/
+
+/*const CORSViaGM = document.body.appendChild(
+	Object.assign(document.createElement('div'), { id: 'CORSViaGM' })
+);
+
+addEventListener('fetchViaGM', (e) => GM_fetch(e.detail.forwardingFetch));
+
+CORSViaGM.init = function (window) {
+	if (!window) throw 'The `window` parameter must be passed in!';
+	window.fetch = window.fetchViaGM = fetchViaGM.bind(window);
+
+	// Support for service worker
+	window.forwardingFetch = new BroadcastChannel('forwardingFetch');
+	window.forwardingFetch.onmessage = async (e) => {
+		const req = e.data;
+		const { url } = req;
+		const res = await fetchViaGM(url, req);
+		const response = await res.blob();
+		window.forwardingFetch.postMessage({
+			type: 'fetchResponse',
+			url,
+			response
+		});
+	};
+
+	window._CORSViaGM && window._CORSViaGM.inited.done();
+
+	const info = '🙉 CORS-via-GM initiated!';
+	console.info(info);
+	return info;
+};
+
+function GM_fetch(p) {
+	GM_xmlhttpRequest({
+		...p.init,
+		url: p.url,
+		method: p.init.method || 'GET',
+		onload: (responseDetails) =>
+			p.res(new Response(responseDetails.response, responseDetails))
+	});
+}
+
+function fetchViaGM(url, init) {
+	let _r;
+	const p = new Promise((r) => (_r = r));
+	p.res = _r;
+	p.url = url;
+	p.init = init || {};
+	dispatchEvent(
+		new CustomEvent('fetchViaGM', { detail: { forwardingFetch: p } })
+	);
+	return p;
+}*/
