@@ -68,14 +68,12 @@ namespace Youtuve_downloader
             {
                 AudioCodecsComboBox.Items.Add(codec.Key);
             }
-
             this.AudioCodecsComboBox.SelectedIndex = 2;
 
             foreach (var codec in videoCodecs)
             {
                 VideoCodecsComboBox.Items.Add(codec.Key);
             }
-
             this.VideoCodecsComboBox.SelectedIndex = 5;
         }
 
@@ -120,7 +118,7 @@ namespace Youtuve_downloader
                     fileExtension = extension;
                 }
 
-                saveFileDialog.Filter = extension + " Audio | *." + extension;
+                saveFileDialog.Filter = extension + " Audio | *.mp3";
             }
             else if (FormatComboBox.Text == "mp4" || FormatComboBox.Text == "mux" || FormatComboBox.Text == "com")
             {
@@ -128,7 +126,7 @@ namespace Youtuve_downloader
             }
 
             saveFileDialog.Title = "Interesting question";
-            saveFileDialog.FileName = SanitizedFileName(currentVideo.Title + "_" + (int)((streamInfo).Bitrate.KiloBitsPerSecond) + "kbps." + fileExtension);
+            saveFileDialog.FileName = SanitizedFileName(currentVideo.Title + "_" + (int)((streamInfo).Bitrate.KiloBitsPerSecond) + "kbps.mp3");
 
             if (saveFileDialog.ShowDialog() != DialogResult.OK) return;
 
