@@ -6,6 +6,6 @@ using System.Runtime.InteropServices;
 
 [assembly: AssemblyTitle("Youtube downloader")]
 [assembly: AssemblyProduct("Youtube downloader")]
-[assembly: AssemblyCopyright("Copyright Mrgaton©  2021")]
+[assembly: AssemblyCopyright("Copyright 2024")]
 [assembly: ComVisible(false)]
-[assembly: Guid("b3b66ad0-ca13-4f35-9188-3d82431cc8c2")]
+[assembly: Guid("fad80c90-155d-4deb-89e6-45c3ad7eb462")]
