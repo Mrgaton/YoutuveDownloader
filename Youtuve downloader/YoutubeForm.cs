@@ -58,7 +58,9 @@ namespace Youtuve_downloader
                 YoutubeLinkTextBox.Text = Config.Get("lastVideo");
 
                 if (int.TryParse(Config.Get("formatIndex"), out int index)) FormatComboBox.SelectedIndex = index;
-                if (bool.TryParse(Config.Get("ReEncodeAudio"), out bool reEncode)) AudioCodecsComboBox.Enabled = ReEncodeAudioCheckBox.Checked = reEncode;
+                
+                if (bool.TryParse(Config.Get("ReEncodeAudio"), out bool audioReEncode)) AudioCodecsComboBox.Enabled = ReEncodeAudioCheckBox.Checked = audioReEncode;
+                if (bool.TryParse(Config.Get("ReEncodeVideo"), out bool videoReEncode)) VideoCodecsComboBox.Enabled = ReEncodeVideoCheckBox.Checked = videoReEncode;
             }
 
             wc.DownloadProgressChanged += (s, e) => DownloadProgressBar.Value = e.ProgressPercentage * 10;
@@ -126,7 +128,7 @@ namespace Youtuve_downloader
             }
 
             saveFileDialog.Title = "Interesting question";
-            saveFileDialog.FileName = SanitizedFileName(currentVideo.Title + "_" + (int)((streamInfo).Bitrate.KiloBitsPerSecond) + "kbps.mp3");
+            saveFileDialog.FileName = SanitizedFileName(currentVideo.Title + "_" + (int)((streamInfo).Bitrate.KiloBitsPerSecond) + "." + fileExtension);
 
             if (saveFileDialog.ShowDialog() != DialogResult.OK) return;
 
@@ -288,7 +290,9 @@ namespace Youtuve_downloader
                     VideoStreamsComboBox.Enabled = false;
                     AudioStreamsComboBox.Enabled = true;
 
-                    ReEncodeAudioCheckBox.Enabled = AudioCodecsComboBox.Enabled = true;
+                    ReEncodeAudioCheckBox.Enabled  = true;
+                    if (ReEncodeAudioCheckBox.Checked) AudioCodecsComboBox.Enabled = true;
+
                     ReEncodeVideoCheckBox.Enabled = VideoCodecsComboBox.Enabled = false;
                     break;
 
@@ -305,8 +309,11 @@ namespace Youtuve_downloader
                 case "com":
                     VideoStreamsComboBox.Enabled = AudioStreamsComboBox.Enabled = true;
 
-                    ReEncodeAudioCheckBox.Enabled = AudioCodecsComboBox.Enabled = true;
-                    ReEncodeVideoCheckBox.Enabled = VideoCodecsComboBox.Enabled = true;
+                    ReEncodeAudioCheckBox.Enabled  = true;
+                    if (ReEncodeAudioCheckBox.Checked) AudioCodecsComboBox.Enabled = true;
+
+                    ReEncodeVideoCheckBox.Enabled = true;
+                    if (ReEncodeVideoCheckBox.Checked) VideoCodecsComboBox.Enabled = true;
                     break;
             }
 
@@ -364,9 +371,6 @@ namespace Youtuve_downloader
                 foreach (var dic in originalValues) dic.Key.Enabled = dic.Value;
             }
         }
-
-        private void ReEncodeAudioCheckBox_CheckedChanged(object sender, EventArgs e) => Config.Set("ReEncodeAudio", (AudioCodecsComboBox.Enabled = ReEncodeAudioCheckBox.Checked).ToString());
-
         private void YoutubeForm_Shown(object sender, EventArgs e) => CheckAndDownloadFfmepg();
 
         private static string defaultFfmepgArgs = "-map_metadata -1";
@@ -379,7 +383,8 @@ namespace Youtuve_downloader
             { "VP9 ⭐", "libvpx-vp9" },
             { "VP8", "libvpx" },
             { "HEVC ⭐", "libx265" },
-            { "AV1 ⭐", "libsvtav1" }
+            { "AV1 ⭐", "libsvtav1" },
+            { "XVID", "mpeg4 -vtag xvid" },
         };
 
         public static Dictionary<string, string> audioCodecs = new Dictionary<string, string>()
@@ -442,7 +447,14 @@ namespace Youtuve_downloader
             await proc.WaitForExitAsync();
             console.Kill();
 
-            if (proc.ExitCode != 0) MessageBox.Show("An error has ocured converting video\n\n" + output.ToString(), Application.ProductName, MessageBoxButtons.OK, MessageBoxIcon.Error);
+            if (proc.ExitCode != 0)
+            {
+                string stringOutput = output.ToString();
+
+                Clipboard.SetText(stringOutput);
+
+                MessageBox.Show("An error has ocured converting video\n\n" + stringOutput, Application.ProductName, MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
 
             return proc.ExitCode == 0;
         }
@@ -488,6 +500,9 @@ namespace Youtuve_downloader
         private void VideoStreamsComboBox_SelectedIndexChanged(object sender, EventArgs e) => oldVideoIndex = VideoStreamsComboBox.SelectedIndex;
 
         private void AudioStreamsComboBox_SelectedIndexChanged(object sender, EventArgs e) => oldAudioIndex = AudioStreamsComboBox.SelectedIndex;
+
+        private void ReEncodeAudioCheckBox_CheckedChanged(object sender, EventArgs e) => Config.Set("ReEncodeAudio", (AudioCodecsComboBox.Enabled = ReEncodeAudioCheckBox.Checked).ToString());
+        private void ReEncodeVideoCheckBox_CheckedChanged(object sender, EventArgs e) => Config.Set("ReEncodeVideo", (VideoCodecsComboBox.Enabled = ReEncodeVideoCheckBox.Checked).ToString());
 
         // old crapy code
         /*private async void DownloadFileWithProgress(string DownloadLink, string PathDe, bool WithLabel, ProgressBar LAbelsita)
