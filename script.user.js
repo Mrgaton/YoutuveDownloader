@@ -41,4 +41,6 @@ const resources = [
 
 (async function () {
 	'use strict';
+
+	await youtubeDownloader();
 })();
