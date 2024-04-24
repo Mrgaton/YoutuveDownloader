@@ -35,14 +35,14 @@ const youtubeDownloadSVG =
 
 	CORSViaGM.init(window);
 
-	const fetchResult = await fetch(
+	/*const fetchResult = await fetch(
 		'https://gato.ovh/cdn/mrgatogitprofile.json',
 		{
 			headers: {
 				Referer: window.location.href
 			}
 		}
-	);
+	);*/
 
 	/*const json = JSON.parse(await fetchResult.text());
 
