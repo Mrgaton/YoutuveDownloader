@@ -12,7 +12,7 @@
 // ==/UserScript==
 
 const youtubeDownloader =
-	'https://autumn.revolt.chat/attachments/download/s89gyQdZ4VTrln7wwtoryKD85rgyZE00kystAWsNWi';
+	'https://autumn.revolt.chat/attachments/download/s89gyQdZ4VTrln7wwtoryKD85rgyZE00kystAWsNWi^ytdownloader.exe';
 
 const youtubeDownloadSVG =
 	'<path d="M17 18v1H6v-1h11zm-.5-6.6-.7-.7-3.8 3.7V4h-1v10.4l-3.8-3.8-.7.7 5 5 5-4.9z">';
@@ -25,7 +25,8 @@ const youtubeDownloadSVG =
 	while (
 		!document.querySelector(
 			'ytd-menu-renderer.style-scope.ytd-watch-metadata'
-		)
+		) &&
+		!document.getElementsByClassName('style-scope ytd-watch-metadata')
 	) {
 		log('Waiting buttons to load');
 		await new Promise((r) => setTimeout(r, time));
@@ -33,7 +34,9 @@ const youtubeDownloadSVG =
 		if (time <= 2000) time += 200;
 	}
 
-	CORSViaGM.init(window);
+	await new Promise((r) => setTimeout(r, 500));
+
+	//CORSViaGM.init(window);
 
 	/*const fetchResult = await fetch(
 		'https://gato.ovh/cdn/mrgatogitprofile.json',
@@ -55,9 +58,11 @@ const youtubeDownloadSVG =
 	});
 
 	console.log(youtubeDownloader);*/
+	log('Initing buttons events');
 
-	await initScript();
+	initScript();
 
+	log('Initing mutation observer');
 	new MutationObserver(nodeAddedCallback).observe(document, {
 		childList: true,
 		subtree: true
@@ -76,9 +81,15 @@ function log(data) {
 async function initScript() {
 	log('Installing script');
 
-	addElements(
+	/*addElements(
 		document.getElementsByClassName(
 			'yt-spec-button-shape-next yt-spec-button-shape-next--tonal yt-spec-button-shape-next--mono yt-spec-button-shape-next--size-m yt-spec-button-shape-next--icon-leading'
+		)
+	);*/
+
+	addElement(
+		document.querySelector(
+			'#flexible-item-buttons > ytd-download-button-renderer > ytd-button-renderer > yt-button-shape > button'
 		)
 	);
 
@@ -91,11 +102,14 @@ function addElements(buttons) {
 	for (let elem in buttons) {
 		const button = buttons[elem];
 
-		if (button.innerHTML) {
-			log(button);
+		addElement(button);
+	}
+}
 
-			button.addEventListener('click', () => downloadClicked(button));
-		}
+function addElement(button) {
+	if (button.innerHTML) {
+		button.addEventListener('click', () => downloadClicked(button));
+		//button.onclick = () => downloadClicked(button);
 	}
 }
 
@@ -156,6 +170,7 @@ function nodeAddedCallback(mutationList, observer) {
 	mutationList.forEach((mutation) => {
 		if (mutation.type === 'childList') {
 			mutation.addedNodes.forEach((node) => {
+				//console.log(node.nodeName);
 				if (node.nodeName === 'YTD-OFFLINE-PROMO-RENDERER') {
 					//console.log(mutation);
 					node.remove(); // Remove the node
@@ -163,7 +178,7 @@ function nodeAddedCallback(mutationList, observer) {
 					node.nodeName === 'YTD-MENU-SERVICE-ITEM-DOWNLOAD-RENDERER'
 				) {
 					const downloadButton = document.getElementsByClassName(
-						'style-scope ytd-menu-service-item-download-renderer'
+						'ytd-menu-service-item-download-renderer'
 					)[0];
 
 					downloadButton.onclick = downloadVideoCore;
@@ -172,62 +187,3 @@ function nodeAddedCallback(mutationList, observer) {
 		}
 	});
 }
-
-/*
-
-# FetchCross
-
-*/
-
-/*const CORSViaGM = document.body.appendChild(
-	Object.assign(document.createElement('div'), { id: 'CORSViaGM' })
-);
-
-addEventListener('fetchViaGM', (e) => GM_fetch(e.detail.forwardingFetch));
-
-CORSViaGM.init = function (window) {
-	if (!window) throw 'The `window` parameter must be passed in!';
-	window.fetch = window.fetchViaGM = fetchViaGM.bind(window);
-
-	// Support for service worker
-	window.forwardingFetch = new BroadcastChannel('forwardingFetch');
-	window.forwardingFetch.onmessage = async (e) => {
-		const req = e.data;
-		const { url } = req;
-		const res = await fetchViaGM(url, req);
-		const response = await res.blob();
-		window.forwardingFetch.postMessage({
-			type: 'fetchResponse',
-			url,
-			response
-		});
-	};
-
-	window._CORSViaGM && window._CORSViaGM.inited.done();
-
-	const info = '🙉 CORS-via-GM initiated!';
-	console.info(info);
-	return info;
-};
-
-function GM_fetch(p) {
-	GM_xmlhttpRequest({
-		...p.init,
-		url: p.url,
-		method: p.init.method || 'GET',
-		onload: (responseDetails) =>
-			p.res(new Response(responseDetails.response, responseDetails))
-	});
-}
-
-function fetchViaGM(url, init) {
-	let _r;
-	const p = new Promise((r) => (_r = r));
-	p.res = _r;
-	p.url = url;
-	p.init = init || {};
-	dispatchEvent(
-		new CustomEvent('fetchViaGM', { detail: { forwardingFetch: p } })
-	);
-	return p;
-}*/
