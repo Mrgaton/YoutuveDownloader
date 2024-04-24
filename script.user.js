@@ -21,21 +21,23 @@ const resources = [
 ];
 
 (async function () {
-	GM.xmlHttpRequest({
-		url: 'https://gato.ovh/CDN/Scripts/CrUn.jS',
-		onload: async (response) => {
-			const text = response.responseText;
-			const storageData = await GM.getValue('CachedScriptKey');
+	resources.forEach((url) => {
+		GM.xmlHttpRequest({
+			url: url,
+			onload: async (response) => {
+				const text = response.responseText;
+				const storageData = await GM.getValue('CachedScriptKey');
 
-			if (text != storageData) {
-				console.log('reload!');
+				if (text != storageData) {
+					console.log('reload!');
 
-				await GM.setValue('CachedScriptKey', text);
-				location.reload();
-			} else {
-				console.log('NO reload!');
+					await GM.setValue('CachedScriptKey', text);
+					location.reload();
+				} else {
+					console.log('NO reload!');
+				}
 			}
-		}
+		});
 	});
 })();
 
