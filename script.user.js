@@ -2,7 +2,7 @@
 // @name         Mrgaton youtube downloader
 // @namespace    http://tampermonkey.net/
 // @require      https://gato.ovh/CDN/Scripts/CrUn.js
-// @version      2024-04-32
+// @version      2024-05-1
 // @description  Download using crun and my awesome program
 // @author       Mrghaton
 // @match        https://www.youtube.com/*
