@@ -80,7 +80,7 @@ namespace Youtuve_downloader
         }
 
         private void YoutubeLinkTextBox_DoubleClick(object sender, EventArgs e) => YoutubeLinkTextBox.SelectAll();
-
+        public static Regex AlphanumericRegex = new Regex("[^a-zA-Z0-9 -]");
         private async void DownloadButton_Click(object sender, EventArgs e)
         {
             if (currentVideo == null) return;
@@ -114,17 +114,13 @@ namespace Youtuve_downloader
             {
                 string extension = fileExtension;
 
-                if (ReEncodeAudioCheckBox.Checked)
-                {
-                    extension = AudioCodecsComboBox.Items[AudioCodecsComboBox.SelectedIndex].ToString();
-                    fileExtension = extension;
-                }
-
-                saveFileDialog.Filter = extension + " Audio | *.mp3";
+                if (ReEncodeAudioCheckBox.Checked) extension = fileExtension = AlphanumericRegex.Replace(AudioCodecsComboBox.Items[AudioCodecsComboBox.SelectedIndex].ToString().ToLower(),"").Trim();
+                
+                saveFileDialog.Filter = extension + " Audio | *." + fileExtension;
             }
             else if (FormatComboBox.Text == "mp4" || FormatComboBox.Text == "mux" || FormatComboBox.Text == "com")
             {
-                saveFileDialog.Filter = "Mp4 Video | *.mp4";
+                saveFileDialog.Filter = "MP4 Video|*.mp4|AVI Video|*.avi|MOV Video|*.mov|MKV Video|*.mkv|FLV Video|*.flv;";
             }
 
             saveFileDialog.Title = "Interesting question";
@@ -145,13 +141,15 @@ namespace Youtuve_downloader
                 DownloadProgressBar.Value = 0;
             }*/
 
+            bool result = false;
+
             if (FormatComboBox.SelectedItem.ToString() == "mp3" && ReEncodeAudioCheckBox.Checked)
             {
                 string tempAudioFile = Path.GetTempFileName();
 
                 await youtube.Videos.Streams.DownloadAsync(streamInfo, tempAudioFile, new Progress<double>(p => DownloadProgressBar.Value = (int)(p * 1000)));
 
-                await ChangeMediaExtension(tempAudioFile, saveFileDialog.FileName, AudioCodecsComboBox.Items[AudioCodecsComboBox.SelectedIndex].ToString());
+               result = await ChangeMediaExtension(tempAudioFile, saveFileDialog.FileName);
             }
             else if (FormatComboBox.SelectedItem.ToString() != "com")
             {
@@ -159,9 +157,9 @@ namespace Youtuve_downloader
             }
             else
             {
-                if (!File.Exists(ffmepgTempPath))
+                if (!File.Exists(ffmpegTempPath))
                 {
-                    MessageBox.Show("FFmepg does not exist and cant download combined videos", Application.ProductName, MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    MessageBox.Show("ffmpeg does not exist and cant download combined videos", Application.ProductName, MessageBoxButtons.OK, MessageBoxIcon.Error);
                     return;
                 }
 
@@ -180,7 +178,7 @@ namespace Youtuve_downloader
 
                 await youtube.Videos.Streams.DownloadAsync(audioStreamInfo, tempAudioFile, new Progress<double>(p => DownloadProgressBar.Value = (int)(videoPercentage + (p * audioPercentage))));
 
-                bool result = await CombineAudioAndVideo(tempVideoFile, tempAudioFile, saveFileDialog.FileName);
+                result = await CombineAudioAndVideo(tempVideoFile, tempAudioFile, saveFileDialog.FileName);
 
                 try
                 {
@@ -273,7 +271,7 @@ namespace Youtuve_downloader
 
             AudioStreamsComboBox.Items.Clear();
 
-            foreach (var stream in audioStreamsInfo) AudioStreamsComboBox.Items.Add(stream.Bitrate.ToString().Split(' ')[0] + "|" + stream.Size + "|" + stream.AudioCodec.ToUpper().Split('.')[0]);
+            foreach (var stream in audioStreamsInfo) AudioStreamsComboBox.Items.Add((int)stream.Bitrate.KiloBitsPerSecond + "k|" + stream.Size + "|" + stream.AudioCodec.ToUpper().Split('.')[0]);
 
             if (FormatComboBox.SelectedItem.ToString() == "mux")
             {
@@ -344,11 +342,11 @@ namespace Youtuve_downloader
             }
         }
 
-        private static string ffmepgTempPath = Path.Combine(Path.GetTempPath(), "ffmepg.exe");
+        private static string ffmpegTempPath = Path.Combine(Path.GetTempPath(), "ffmpeg.exe");
 
-        private async Task CheckAndDownloadFfmepg()
+        private async Task CheckAndDownloadffmpeg()
         {
-            if (!File.Exists(ffmepgTempPath))
+            if (!File.Exists(ffmpegTempPath))
             {
                 if (MessageBox.Show("FFMPEG is not downloaded you want to download it to temp files?", Application.ProductName, MessageBoxButtons.OKCancel, MessageBoxIcon.Question) != DialogResult.OK)
                 {
@@ -366,14 +364,14 @@ namespace Youtuve_downloader
                     c.Enabled = false;
                 }
 
-                await wc.DownloadFileTaskAsync("https://raw.githubusercontent.com/Mrgaton/FFMEPGDownload/main/ffmpeg-7.0-full_build/ffmpeg.exe", ffmepgTempPath);
+                await wc.DownloadFileTaskAsync("https://raw.githubusercontent.com/Mrgaton/ffmpegDownload/main/ffmpeg-7.0-full_build/ffmpeg.exe", ffmpegTempPath);
 
                 foreach (var dic in originalValues) dic.Key.Enabled = dic.Value;
             }
         }
-        private void YoutubeForm_Shown(object sender, EventArgs e) => CheckAndDownloadFfmepg();
+        private void YoutubeForm_Shown(object sender, EventArgs e) => CheckAndDownloadffmpeg();
 
-        private static string defaultFfmepgArgs = "-map_metadata -1";
+        private static string defaultffmpegArgs = "-map_metadata -1";
 
         public static Dictionary<string, string> videoCodecs = new Dictionary<string, string>()
         {
@@ -382,17 +380,17 @@ namespace Youtuve_downloader
             { "FLV1", "flv" },
             { "VP9 ⭐", "libvpx-vp9" },
             { "VP8", "libvpx" },
-            { "HEVC ⭐", "libx265" },
-            { "AV1 ⭐", "libsvtav1" },
-            { "XVID", "mpeg4 -vtag xvid" },
+            { "HEVC ⭐", "libx265 -preset slow" },
+            { "AV1 ⭐", "libsvtav1 -preset 6" },
+            { "XVID", "libxvid -q:v 5 -q:a 4" },
         };
 
         public static Dictionary<string, string> audioCodecs = new Dictionary<string, string>()
         {
             { "WAV","pcm_s16le" },
-            { "FLAC","flac -sample_fmt s16" },
+            { "FLAC","flac -sample_fmt s16 -compression_level 8" },
             { "AAC ⭐","aac" },
-            { "OPUS ⭐","opus" },
+            { "OPUS ⭐","opus -strict -2 -vbr on -compression_level 10" },
             { "OGG","libvorbis" },
             { "MP3","libmp3lame" }
         };
@@ -416,14 +414,14 @@ namespace Youtuve_downloader
         {
             string videoCodec = (ReEncodeVideoCheckBox.Checked ? videoCodecs[VideoCodecsComboBox.Items[VideoCodecsComboBox.SelectedIndex].ToString()] : "copy");
             string audioCodec = (ReEncodeAudioCheckBox.Checked ? audioCodecs[AudioCodecsComboBox.Items[AudioCodecsComboBox.SelectedIndex].ToString()] : "copy");
-            //string reference = "ffmepg.exe -i \"video.mp4\" -i \"audio.mp3\" -c:a copy -c:v copy -n oeut.mp4";
+            //string reference = "ffmpeg.exe -i \"video.mp4\" -i \"audio.mp3\" -c:a copy -c:v copy -n oeut.mp4";
 
             ProcessStartInfo processStartInfo = new ProcessStartInfo()
             {
-                FileName = ffmepgTempPath,
+                FileName = ffmpegTempPath,
 
                 Arguments = $"-hwaccel auto -hide_banner -nostdin -i \"{videoPath}\" -i \"{audioPath}\" " 
-                + defaultFfmepgArgs 
+                + defaultffmpegArgs 
                 + $" -strict -2 -c:a {audioCodec} -c:v {videoCodec} -y \"{outputFile}\"",
 
                 CreateNoWindow = true,
@@ -447,29 +445,24 @@ namespace Youtuve_downloader
             await proc.WaitForExitAsync();
             console.Kill();
 
-            if (proc.ExitCode != 0)
-            {
-                string stringOutput = output.ToString();
+            if (proc.ExitCode != 0) ShowConversionError(output.ToString());
 
-                Clipboard.SetText(stringOutput);
 
-                MessageBox.Show("An error has ocured converting video\n\n" + stringOutput, Application.ProductName, MessageBoxButtons.OK, MessageBoxIcon.Error);
-            }
 
             return proc.ExitCode == 0;
         }
 
-        private async Task<bool> ChangeMediaExtension(string mediaPath, string outputPath, string ext)
+        private async Task<bool> ChangeMediaExtension(string mediaPath, string outputPath)
         {
-            //string reference = "ffmepg.exe -i \"video.mp4\" -i \"audio.mp3\" -c:a copy -c:v copy -n oeut.mp4";
+            //string reference = "ffmpeg.exe -i \"video.mp4\" -i \"audio.mp3\" -c:a copy -c:v copy -n oeut.mp4";
+
+            string audioCodec = (ReEncodeAudioCheckBox.Checked ? audioCodecs[AudioCodecsComboBox.Items[AudioCodecsComboBox.SelectedIndex].ToString()] : "copy");
 
             ProcessStartInfo processStartInfo = new ProcessStartInfo()
             {
-                FileName = ffmepgTempPath,
+                FileName = ffmpegTempPath,
 
-                Arguments = $"-hide_banner -nostdin -i \"{mediaPath}\" "
-                + defaultFfmepgArgs
-                + $" -strict -2 -c:a {audioCodecs[ext]} -y \"{outputPath}\"",
+                Arguments = $"-hide_banner -nostdin -i \"{mediaPath}\" {defaultffmpegArgs} -c:a {audioCodec} -y \"{outputPath}\"",
 
                 CreateNoWindow = true,
                 //RedirectStandardInput = true,
@@ -477,6 +470,8 @@ namespace Youtuve_downloader
                 RedirectStandardOutput = false,
                 UseShellExecute = false
             };
+
+            Clipboard.SetText(processStartInfo.Arguments);
 
             var console = StartConsole();
             console.StandardInput.WriteLine("Converting media please wait");
@@ -492,9 +487,16 @@ namespace Youtuve_downloader
             await proc.WaitForExitAsync();
             console.Kill();
 
-            if (proc.ExitCode != 0) MessageBox.Show("An error has ocured converting video\n\n" + output.ToString(), Application.ProductName, MessageBoxButtons.OK, MessageBoxIcon.Error);
+            if (proc.ExitCode != 0) ShowConversionError(output.ToString());
 
             return proc.ExitCode == 0;
+        }
+        private static void ShowConversionError(string data)
+        {
+            Clipboard.SetText(data);
+
+            MessageBox.Show("An error has ocured converting video\n\n" + data, Application.ProductName, MessageBoxButtons.OK, MessageBoxIcon.Error);
+
         }
 
         private void VideoStreamsComboBox_SelectedIndexChanged(object sender, EventArgs e) => oldVideoIndex = VideoStreamsComboBox.SelectedIndex;
