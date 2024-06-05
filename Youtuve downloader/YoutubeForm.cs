@@ -159,7 +159,7 @@ namespace Youtuve_downloader
             {
                 if (!File.Exists(ffmpegTempPath))
                 {
-                    MessageBox.Show("ffmpeg does not exist and cant download combined videos", Application.ProductName, MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    MessageBox.Show("FFMPEG does not exist and cant download combined videos", Application.ProductName, MessageBoxButtons.OK, MessageBoxIcon.Error);
                     return;
                 }
 
