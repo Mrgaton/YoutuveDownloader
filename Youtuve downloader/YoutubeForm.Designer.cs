@@ -1,7 +1,7 @@
 ﻿
 namespace Youtuve_downloader
 {
-    partial class YoutubeForm
+    partial class YouTubeForm
     {
         /// <summary>
         /// Variable del diseñador necesaria.
@@ -29,7 +29,7 @@ namespace Youtuve_downloader
         /// </summary>
         private void InitializeComponent()
         {
-            System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(YoutubeForm));
+            System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(YouTubeForm));
             this.YoutubeLinkTextBox = new System.Windows.Forms.TextBox();
             this.YoutubeLinkLabel = new System.Windows.Forms.Label();
             this.FormatComboBox = new System.Windows.Forms.ComboBox();
@@ -52,9 +52,9 @@ namespace Youtuve_downloader
             // 
             this.YoutubeLinkTextBox.Font = new System.Drawing.Font("Microsoft Sans Serif", 18F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.YoutubeLinkTextBox.Location = new System.Drawing.Point(14, 37);
-            this.YoutubeLinkTextBox.Margin = new System.Windows.Forms.Padding(2, 2, 2, 2);
+            this.YoutubeLinkTextBox.Margin = new System.Windows.Forms.Padding(2);
             this.YoutubeLinkTextBox.Name = "YoutubeLinkTextBox";
-            this.YoutubeLinkTextBox.Size = new System.Drawing.Size(185, 35);
+            this.YoutubeLinkTextBox.Size = new System.Drawing.Size(177, 35);
             this.YoutubeLinkTextBox.TabIndex = 0;
             this.YoutubeLinkTextBox.TextChanged += new System.EventHandler(this.YoutubeLinkTextBox_TextChanged);
             this.YoutubeLinkTextBox.DoubleClick += new System.EventHandler(this.YoutubeLinkTextBox_DoubleClick);
@@ -77,14 +77,14 @@ namespace Youtuve_downloader
             this.FormatComboBox.Font = new System.Drawing.Font("Microsoft Sans Serif", 16.2F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.FormatComboBox.FormattingEnabled = true;
             this.FormatComboBox.Items.AddRange(new object[] {
-            "com",
-            "mp3",
-            "mp4",
-            "mux"});
-            this.FormatComboBox.Location = new System.Drawing.Point(203, 38);
-            this.FormatComboBox.Margin = new System.Windows.Forms.Padding(2, 2, 2, 2);
+            "COM",
+            "MP3",
+            "MP4",
+            "MUX"});
+            this.FormatComboBox.Location = new System.Drawing.Point(195, 38);
+            this.FormatComboBox.Margin = new System.Windows.Forms.Padding(2);
             this.FormatComboBox.Name = "FormatComboBox";
-            this.FormatComboBox.Size = new System.Drawing.Size(72, 34);
+            this.FormatComboBox.Size = new System.Drawing.Size(80, 34);
             this.FormatComboBox.Sorted = true;
             this.FormatComboBox.TabIndex = 2;
             this.FormatComboBox.SelectedIndexChanged += new System.EventHandler(this.FormatComboBox_SelectedIndexChanged);
@@ -94,9 +94,9 @@ namespace Youtuve_downloader
             this.DownloadButton.Enabled = false;
             this.DownloadButton.Font = new System.Drawing.Font("Microsoft Sans Serif", 13.8F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.DownloadButton.Location = new System.Drawing.Point(565, 75);
-            this.DownloadButton.Margin = new System.Windows.Forms.Padding(2, 2, 2, 2);
+            this.DownloadButton.Margin = new System.Windows.Forms.Padding(2);
             this.DownloadButton.Name = "DownloadButton";
-            this.DownloadButton.Size = new System.Drawing.Size(251, 48);
+            this.DownloadButton.Size = new System.Drawing.Size(258, 48);
             this.DownloadButton.TabIndex = 3;
             this.DownloadButton.Text = "Descargar";
             this.DownloadButton.UseVisualStyleBackColor = true;
@@ -106,9 +106,9 @@ namespace Youtuve_downloader
             // 
             this.VideoFotoPictureBox.BackColor = System.Drawing.SystemColors.ControlDark;
             this.VideoFotoPictureBox.Location = new System.Drawing.Point(10, 127);
-            this.VideoFotoPictureBox.Margin = new System.Windows.Forms.Padding(2, 2, 2, 2);
+            this.VideoFotoPictureBox.Margin = new System.Windows.Forms.Padding(2);
             this.VideoFotoPictureBox.Name = "VideoFotoPictureBox";
-            this.VideoFotoPictureBox.Size = new System.Drawing.Size(806, 458);
+            this.VideoFotoPictureBox.Size = new System.Drawing.Size(813, 458);
             this.VideoFotoPictureBox.SizeMode = System.Windows.Forms.PictureBoxSizeMode.Zoom;
             this.VideoFotoPictureBox.TabIndex = 4;
             this.VideoFotoPictureBox.TabStop = false;
@@ -128,11 +128,11 @@ namespace Youtuve_downloader
             // DownloadProgressBar
             // 
             this.DownloadProgressBar.Location = new System.Drawing.Point(10, 589);
-            this.DownloadProgressBar.Margin = new System.Windows.Forms.Padding(2, 2, 2, 2);
+            this.DownloadProgressBar.Margin = new System.Windows.Forms.Padding(2);
             this.DownloadProgressBar.MarqueeAnimationSpeed = 30;
             this.DownloadProgressBar.Maximum = 1000;
             this.DownloadProgressBar.Name = "DownloadProgressBar";
-            this.DownloadProgressBar.Size = new System.Drawing.Size(806, 51);
+            this.DownloadProgressBar.Size = new System.Drawing.Size(813, 51);
             this.DownloadProgressBar.Step = 30;
             this.DownloadProgressBar.TabIndex = 6;
             // 
@@ -142,7 +142,7 @@ namespace Youtuve_downloader
             this.VideoStreamsComboBox.Font = new System.Drawing.Font("Microsoft Sans Serif", 16.2F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.VideoStreamsComboBox.FormattingEnabled = true;
             this.VideoStreamsComboBox.Location = new System.Drawing.Point(279, 37);
-            this.VideoStreamsComboBox.Margin = new System.Windows.Forms.Padding(2, 2, 2, 2);
+            this.VideoStreamsComboBox.Margin = new System.Windows.Forms.Padding(2);
             this.VideoStreamsComboBox.Name = "VideoStreamsComboBox";
             this.VideoStreamsComboBox.Size = new System.Drawing.Size(282, 34);
             this.VideoStreamsComboBox.TabIndex = 7;
@@ -164,7 +164,7 @@ namespace Youtuve_downloader
             // 
             this.VideoBoxLabel.AutoSize = true;
             this.VideoBoxLabel.Font = new System.Drawing.Font("Microsoft Sans Serif", 16.2F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.VideoBoxLabel.Location = new System.Drawing.Point(274, 9);
+            this.VideoBoxLabel.Location = new System.Drawing.Point(274, 6);
             this.VideoBoxLabel.Margin = new System.Windows.Forms.Padding(2, 0, 2, 0);
             this.VideoBoxLabel.Name = "VideoBoxLabel";
             this.VideoBoxLabel.Size = new System.Drawing.Size(68, 26);
@@ -189,9 +189,9 @@ namespace Youtuve_downloader
             this.AudioStreamsComboBox.Font = new System.Drawing.Font("Microsoft Sans Serif", 16.2F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.AudioStreamsComboBox.FormattingEnabled = true;
             this.AudioStreamsComboBox.Location = new System.Drawing.Point(565, 37);
-            this.AudioStreamsComboBox.Margin = new System.Windows.Forms.Padding(2, 2, 2, 2);
+            this.AudioStreamsComboBox.Margin = new System.Windows.Forms.Padding(2);
             this.AudioStreamsComboBox.Name = "AudioStreamsComboBox";
-            this.AudioStreamsComboBox.Size = new System.Drawing.Size(251, 34);
+            this.AudioStreamsComboBox.Size = new System.Drawing.Size(258, 34);
             this.AudioStreamsComboBox.TabIndex = 10;
             this.AudioStreamsComboBox.SelectedIndexChanged += new System.EventHandler(this.AudioStreamsComboBox_SelectedIndexChanged);
             // 
@@ -201,10 +201,11 @@ namespace Youtuve_downloader
             this.AudioCodecsComboBox.FlatStyle = System.Windows.Forms.FlatStyle.System;
             this.AudioCodecsComboBox.Font = new System.Drawing.Font("Microsoft Sans Serif", 11.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.AudioCodecsComboBox.FormattingEnabled = true;
-            this.AudioCodecsComboBox.Location = new System.Drawing.Point(735, 9);
+            this.AudioCodecsComboBox.Location = new System.Drawing.Point(743, 9);
             this.AudioCodecsComboBox.Name = "AudioCodecsComboBox";
             this.AudioCodecsComboBox.Size = new System.Drawing.Size(80, 26);
             this.AudioCodecsComboBox.TabIndex = 12;
+            this.AudioCodecsComboBox.SelectedIndexChanged += new System.EventHandler(this.AudioCodecsComboBox_SelectedIndexChanged);
             // 
             // VideoCodecsComboBox
             // 
@@ -212,16 +213,17 @@ namespace Youtuve_downloader
             this.VideoCodecsComboBox.FlatStyle = System.Windows.Forms.FlatStyle.System;
             this.VideoCodecsComboBox.Font = new System.Drawing.Font("Microsoft Sans Serif", 11.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.VideoCodecsComboBox.FormattingEnabled = true;
-            this.VideoCodecsComboBox.Location = new System.Drawing.Point(478, 9);
+            this.VideoCodecsComboBox.Location = new System.Drawing.Point(473, 9);
             this.VideoCodecsComboBox.Name = "VideoCodecsComboBox";
-            this.VideoCodecsComboBox.Size = new System.Drawing.Size(82, 26);
+            this.VideoCodecsComboBox.Size = new System.Drawing.Size(87, 26);
             this.VideoCodecsComboBox.TabIndex = 14;
+            this.VideoCodecsComboBox.SelectedIndexChanged += new System.EventHandler(this.VideoCodecsComboBox_SelectedIndexChanged);
             // 
             // ReEncodeVideoCheckBox
             // 
             this.ReEncodeVideoCheckBox.AutoSize = true;
             this.ReEncodeVideoCheckBox.Font = new System.Drawing.Font("Microsoft Sans Serif", 14.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.ReEncodeVideoCheckBox.Location = new System.Drawing.Point(347, 10);
+            this.ReEncodeVideoCheckBox.Location = new System.Drawing.Point(338, 7);
             this.ReEncodeVideoCheckBox.Name = "ReEncodeVideoCheckBox";
             this.ReEncodeVideoCheckBox.Size = new System.Drawing.Size(120, 28);
             this.ReEncodeVideoCheckBox.TabIndex = 13;
@@ -229,7 +231,7 @@ namespace Youtuve_downloader
             this.ReEncodeVideoCheckBox.UseVisualStyleBackColor = true;
             this.ReEncodeVideoCheckBox.CheckedChanged += new System.EventHandler(this.ReEncodeVideoCheckBox_CheckedChanged);
             // 
-            // YoutubeForm
+            // YouTubeForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
@@ -251,12 +253,12 @@ namespace Youtuve_downloader
             this.Controls.Add(this.YoutubeLinkTextBox);
             this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedSingle;
             this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
-            this.Margin = new System.Windows.Forms.Padding(2, 2, 2, 2);
+            this.Margin = new System.Windows.Forms.Padding(2);
             this.MaximizeBox = false;
-            this.Name = "YoutubeForm";
+            this.Name = "YouTubeForm";
             this.StartPosition = System.Windows.Forms.FormStartPosition.Manual;
             this.Text = "Youtube Downloader By Mrgaton";
-            this.Shown += new System.EventHandler(this.YoutubeForm_Shown);
+            this.Shown += new System.EventHandler(this.YouTubeForm_Shown);
             ((System.ComponentModel.ISupportInitialize)(this.VideoFotoPictureBox)).EndInit();
             this.ResumeLayout(false);
             this.PerformLayout();

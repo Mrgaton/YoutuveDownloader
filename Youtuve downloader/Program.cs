@@ -39,7 +39,7 @@ namespace Youtuve_downloader
 
             Application.EnableVisualStyles();
             Application.SetCompatibleTextRenderingDefault(false);
-            Application.Run(new YoutubeForm(args));
+            Application.Run(new YouTubeForm(args));
         }
     }
 }
