@@ -4,7 +4,7 @@
 // @require      https://gato.ovh/CDN/Scripts/CrUn.js
 // @version      2024-06-6
 // @description  Download using crun and my awesome program
-// @author       Mrghaton
+// @author       Mrgaton
 // @match        https://www.youtube.com/*
 // @icon         https://www.google.com/s2/favicons?sz=64&domain=youtube.com
 // @downloadURL  https://raw.githubusercontent.com/Mrgaton/YoutuveDownloader/master/script.user.js
