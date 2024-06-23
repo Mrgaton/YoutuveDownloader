@@ -8,7 +8,7 @@
 // @match        https://www.youtube.com/*
 // @icon         https://www.google.com/s2/favicons?sz=64&domain=youtube.com
 // @downloadURL  https://raw.githubusercontent.com/Mrgaton/YoutuveDownloader/master/script.user.js
-// @updateURL  https://raw.githubusercontent.com/Mrgaton/YoutuveDownloader/master/script.user.js
+// @updateURL 	 https://raw.githubusercontent.com/Mrgaton/YoutuveDownloader/master/script.user.js
 
 // @grant        GM.xmlHttpRequest
 // @grant        GM.getValue

@@ -1,5 +1,4 @@
-﻿using ClipboardAssist;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Drawing;
@@ -7,7 +6,6 @@ using System.IO;
 using System.Linq;
 using System.Net;
 using System.Reflection;
-using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using System.Text;
 using System.Text.RegularExpressions;
@@ -36,17 +34,18 @@ namespace Youtuve_downloader
 
         public static Dictionary<string, string> arguments = new Dictionary<string, string>();
 
-
         private IntPtr nextClipboardViewer;
 
-        public MediaType FormatComboBoxMediaTpe { get => (MediaType)FormatComboBox.SelectedIndex; }
-        public enum MediaType: int
+        public MediaType FormatComboBoxMediaType { get => (MediaType)FormatComboBox.SelectedIndex; }
+
+        public enum MediaType : int
         {
             COM = 0,
             MP3 = 1,
             MP4 = 2,
             MUX = 3
         }
+
         public YouTubeForm(string[] args)
         {
             nextClipboardViewer = (IntPtr)SetClipboardViewer((int)this.Handle);
@@ -75,7 +74,7 @@ namespace Youtuve_downloader
                 if (int.TryParse(Config.Get("formatIndex"), out int index)) FormatComboBox.SelectedIndex = index;
 
                 if (bool.TryParse(Config.Get("ReEncodeAudio"), out bool audioReEncode)) AudioCodecsComboBox.Enabled = ReEncodeAudioCheckBox.Checked = audioReEncode;
-                if (bool.TryParse(Config.Get("ReEncodeVideo"), out bool videoReEncode)) VideoCodecsComboBox.Enabled = ReEncodeVideoCheckBox.Checked = videoReEncode;
+                if (bool.TryParse(Config.Get("ReEncodeVideo"), out bool videoReEncode)) VideoCodecsComboBox.Enabled = FpsUpDown.Enabled = ReEncodeVideoCheckBox.Checked = videoReEncode;
             }
 
             wc.DownloadProgressChanged += (s, e) => DownloadProgressBar.Value = e.ProgressPercentage * 10;
@@ -83,7 +82,7 @@ namespace Youtuve_downloader
 
             foreach (var codec in audioCodecs) AudioCodecsComboBox.Items.Add(codec.Key);
             foreach (var codec in videoCodecs) VideoCodecsComboBox.Items.Add(codec.Key);
-          
+
             if (int.TryParse(Config.Get("videoCodec"), out int videoCodecIndex))
             {
                 VideoCodecsComboBox.SelectedIndex = videoCodecIndex;
@@ -108,7 +107,7 @@ namespace Youtuve_downloader
                 {
                     string clipboardText = ((string)i.DataObject.GetData(DataFormats.Text)).Trim();
 
-                    if (clipboardText.StartsWith("https://",StringComparison.InvariantCultureIgnoreCase) && clipboardText.ToLower().Contains("youtu"))
+                    if (clipboardText.StartsWith("https://", StringComparison.InvariantCultureIgnoreCase) && clipboardText.ToLower().Contains("youtu"))
                     {
                         YoutubeLinkTextBox.Text = clipboardText;
                     }
@@ -117,7 +116,9 @@ namespace Youtuve_downloader
         }
 
         private void YoutubeLinkTextBox_DoubleClick(object sender, EventArgs e) => YoutubeLinkTextBox.SelectAll();
+
         public static Regex AlphanumericRegex = new Regex("[^a-zA-Z0-9 -]");
+
         private async void DownloadButton_Click(object sender, EventArgs e)
         {
             if (currentVideo == null) return;
@@ -126,7 +127,7 @@ namespace Youtuve_downloader
 
             string fileExtension = string.Empty;
 
-            switch (FormatComboBoxMediaTpe)
+            switch (FormatComboBoxMediaType)
             {
                 case MediaType.MP3:
                     streamInfo = audioStreamsInfo.ElementAt(AudioStreamsComboBox.SelectedIndex);
@@ -147,15 +148,15 @@ namespace Youtuve_downloader
 
             SaveFileDialog saveFileDialog = new SaveFileDialog();
 
-            if (FormatComboBoxMediaTpe == MediaType.MP3)
+            if (FormatComboBoxMediaType == MediaType.MP3)
             {
                 string extension = fileExtension;
 
-                if (ReEncodeAudioCheckBox.Checked) extension = fileExtension = AlphanumericRegex.Replace(AudioCodecsComboBox.Items[AudioCodecsComboBox.SelectedIndex].ToString().ToLower(),"").Trim();
-                
+                if (ReEncodeAudioCheckBox.Checked) extension = fileExtension = AlphanumericRegex.Replace(AudioCodecsComboBox.Items[AudioCodecsComboBox.SelectedIndex].ToString().ToLower(), "").Trim();
+
                 saveFileDialog.Filter = extension + " Audio | *." + fileExtension;
             }
-            else if (FormatComboBoxMediaTpe == MediaType.MP4 || FormatComboBoxMediaTpe == MediaType.MUX || FormatComboBoxMediaTpe == MediaType.COM)
+            else if (FormatComboBoxMediaType == MediaType.MP4 || FormatComboBoxMediaType == MediaType.MUX || FormatComboBoxMediaType == MediaType.COM)
             {
                 saveFileDialog.Filter = "MP4 Video|*.mp4|AVI Video|*.avi|MOV Video|*.mov|MKV Video|*.mkv|FLV Video|*.flv;";
             }
@@ -180,15 +181,15 @@ namespace Youtuve_downloader
 
             bool result = false;
 
-            if (FormatComboBoxMediaTpe == MediaType.MP3 && ReEncodeAudioCheckBox.Checked)
+            if (FormatComboBoxMediaType == MediaType.MP3 && ReEncodeAudioCheckBox.Checked)
             {
                 string tempAudioFile = Path.GetTempFileName();
 
                 await youtube.Videos.Streams.DownloadAsync(streamInfo, tempAudioFile, new Progress<double>(p => DownloadProgressBar.Value = (int)(p * 1000)));
 
-               result = await ChangeMediaExtension(tempAudioFile, saveFileDialog.FileName);
+                result = await ChangeMediaExtension(tempAudioFile, saveFileDialog.FileName);
             }
-            else if (FormatComboBoxMediaTpe != MediaType.COM)
+            else if (FormatComboBoxMediaType != MediaType.COM)
             {
                 await youtube.Videos.Streams.DownloadAsync(streamInfo, saveFileDialog.FileName, new Progress<double>(p => DownloadProgressBar.Value = (int)(p * 1000)));
             }
@@ -212,7 +213,6 @@ namespace Youtuve_downloader
                 double audioPercentage = (audioBytesSize / totalDataSize) * 1000;
 
                 await youtube.Videos.Streams.DownloadAsync(streamInfo, tempVideoFile, new Progress<double>(p => DownloadProgressBar.Value = (int)(p * videoPercentage)));
-
                 await youtube.Videos.Streams.DownloadAsync(audioStreamInfo, tempAudioFile, new Progress<double>(p => DownloadProgressBar.Value = (int)(videoPercentage + (p * audioPercentage))));
 
                 result = await CombineAudioAndVideo(tempVideoFile, tempAudioFile, saveFileDialog.FileName);
@@ -260,6 +260,10 @@ namespace Youtuve_downloader
 
                 currentVideo = await youtube.Videos.GetAsync(YoutubeLinkTextBox.Text);
 
+                StartTextBox.Text = "00:00";
+                videoDuration = (TimeSpan)currentVideo.Duration;
+                EndTextBox.Text = videoDuration.Hours == 0 ? videoDuration.ToString(@"mm\:ss") : videoDuration.ToString(@"hh\:mm\:ss");
+
                 AudioStreamsComboBox.Items.Clear();
                 VideoStreamsComboBox.Items.Clear();
             }
@@ -291,22 +295,36 @@ namespace Youtuve_downloader
                 DownloadButton.Enabled = true;
             }
         }
+
         private async Task UpdateVideoInfoAsync()
         {
             VideoNameLabel.Text = currentVideo.Title;
 
             using (WebClient client = new WebClient())
             {
-                using (Stream stream = await client.OpenReadTaskAsync(new Uri($"https://i.ytimg.com/vi/{currentVideo.Id}/hq720.jpg")))
+                try
                 {
-                    VideoFotoPictureBox.Image = Image.FromStream(stream);
+                    using (Stream stream = await client.OpenReadTaskAsync(new Uri($"https://i.ytimg.com/vi/{currentVideo.Id}/hq720.jpg")))
+                    {
+                        VideoFotoPictureBox.Image = Image.FromStream(stream);
+                    }
+                }
+                catch
+                {
+                    try
+                    {
+                        using (Stream stream = await client.OpenReadTaskAsync(new Uri(currentVideo.Thumbnails.First(url => url.Url.EndsWith(".jpg", StringComparison.InvariantCultureIgnoreCase)).Url)))
+                        {
+                            VideoFotoPictureBox.Image = Image.FromStream(stream);
+                        }
+                    }
+                    catch { }
                 }
             }
         }
 
-
-        private static int oldVideoIndex = 0;
-        private static int oldAudioIndex = 0;
+        private int oldVideoIndex = 0;
+        private int oldAudioIndex = 0;
 
         private async void UpdateStreams()
         {
@@ -318,7 +336,7 @@ namespace Youtuve_downloader
 
             foreach (var stream in audioStreamsInfo) AudioStreamsComboBox.Items.Add((int)stream.Bitrate.KiloBitsPerSecond + "k|" + stream.Size + "|" + stream.AudioCodec.ToUpper().Split('.')[0]);
 
-            if (FormatComboBoxMediaTpe == MediaType.MUX)
+            if (FormatComboBoxMediaType == MediaType.MUX)
             {
                 foreach (var stream in muxedStreamsInfo) VideoStreamsComboBox.Items.Add(stream.VideoResolution + "|" + stream.Size + "|" + stream.VideoCodec.Split('.')[0]);
             }
@@ -327,13 +345,15 @@ namespace Youtuve_downloader
                 foreach (var stream in videoStreamsInfo) VideoStreamsComboBox.Items.Add(stream.VideoResolution + "|" + stream.Size + "|" + stream.VideoCodec.Split('.')[0]);
             }
 
-            switch (FormatComboBoxMediaTpe)
+            switch (FormatComboBoxMediaType)
             {
                 case MediaType.MP3:
+                    FpsUpDown.Enabled = StartTextBox.Enabled = EndTextBox.Enabled = false;
+
                     VideoStreamsComboBox.Enabled = false;
                     AudioStreamsComboBox.Enabled = true;
 
-                    ReEncodeAudioCheckBox.Enabled  = true;
+                    ReEncodeAudioCheckBox.Enabled = true;
                     if (ReEncodeAudioCheckBox.Checked) AudioCodecsComboBox.Enabled = true;
 
                     ReEncodeVideoCheckBox.Enabled = VideoCodecsComboBox.Enabled = false;
@@ -341,6 +361,8 @@ namespace Youtuve_downloader
 
                 case MediaType.MUX:
                 case MediaType.MP4:
+                    FpsUpDown.Enabled = StartTextBox.Enabled = EndTextBox.Enabled = false;
+
                     VideoStreamsComboBox.Enabled = true;
                     AudioStreamsComboBox.Enabled = false;
 
@@ -350,9 +372,12 @@ namespace Youtuve_downloader
                     break;
 
                 case MediaType.COM:
+                    StartTextBox.Enabled = EndTextBox.Enabled = true;
+                    FpsUpDown.Enabled = ReEncodeVideoCheckBox.Checked;
+
                     VideoStreamsComboBox.Enabled = AudioStreamsComboBox.Enabled = true;
 
-                    ReEncodeAudioCheckBox.Enabled  = true;
+                    ReEncodeAudioCheckBox.Enabled = true;
                     if (ReEncodeAudioCheckBox.Checked) AudioCodecsComboBox.Enabled = true;
 
                     ReEncodeVideoCheckBox.Enabled = true;
@@ -387,7 +412,7 @@ namespace Youtuve_downloader
             }
         }
 
-        private static string ffmpegTempPath = Path.Combine(Path.GetTempPath(), "ffmpeg.exe");
+        private static string ffmpegTempPath = Path.Combine(Path.GetTempPath(), "ffmpeg-7.0.1.exe");
 
         private async Task CheckAndDownloadffmpeg()
         {
@@ -409,11 +434,12 @@ namespace Youtuve_downloader
                     c.Enabled = false;
                 }
 
-                await wc.DownloadFileTaskAsync("https://raw.githubusercontent.com/Mrgaton/ffmpegDownload/main/ffmpeg-7.0-full_build/ffmpeg.exe", ffmpegTempPath);
+                await wc.DownloadFileTaskAsync($"https://raw.githubusercontent.com/Mrgaton/ffmpegDownload/main/{Path.GetFileNameWithoutExtension(ffmpegTempPath)}-full_build/ffmpeg.exe", ffmpegTempPath);
 
                 foreach (var dic in originalValues) dic.Key.Enabled = dic.Value;
             }
         }
+
         private void YouTubeForm_Shown(object sender, EventArgs e) => CheckAndDownloadffmpeg();
 
         private static string defaultffmpegArgs = "-map_metadata -1";
@@ -425,8 +451,8 @@ namespace Youtuve_downloader
             { "FLV1", "flv" },
             { "VP9 ⭐", "libvpx-vp9" },
             { "VP8", "libvpx" },
-            { "HEVC ⭐", "libx265 -preset slow" },
-            { "AV1 ⭐", "libsvtav1 -preset 6" },
+            { "HEVC ⭐", "hevc_nvenc -preset p7 -rc:v vbr" },
+            { "AV1 ⭐", "libsvtav1 -preset 8" },
             { "XVID", "libxvid -q:v 5 -q:a 4" },
         };
 
@@ -435,7 +461,7 @@ namespace Youtuve_downloader
             { "WAV","pcm_s16le" },
             { "FLAC","flac -sample_fmt s16 -compression_level 8" },
             { "AAC ⭐","aac" },
-            { "OPUS ⭐","opus -strict -2 -vbr on -compression_level 10" },
+            { "OPUS ⭐","opus -strict -2 -vbr on -compression_level 10 -frame_duration 40" },
             { "OGG","libvorbis" },
             { "MP3","libmp3lame" }
         };
@@ -465,8 +491,10 @@ namespace Youtuve_downloader
             {
                 FileName = ffmpegTempPath,
 
-                Arguments = $"-hwaccel auto -hide_banner -nostdin -i \"{videoPath}\" -i \"{audioPath}\" " 
-                + defaultffmpegArgs 
+                Arguments = $"-hwaccel auto -hide_banner -nostdin -i \"{videoPath}\" -i \"{audioPath}\" "
+                + defaultffmpegArgs
+                + (tarjetStartTimeSpan.TotalSeconds > 0 ? " -ss " + StartTextBox.Text : null)
+                + (FpsUpDown.Enabled && FpsUpDown.Value != videoQuality.Value.Framerate ? " -r " + FpsUpDown.Value : null)
                 + $" -strict -2 -c:a {audioCodec} -c:v {videoCodec} -y \"{outputFile}\"",
 
                 CreateNoWindow = true,
@@ -484,7 +512,7 @@ namespace Youtuve_downloader
             Process proc = Process.Start(processStartInfo);
             while (!proc.StandardError.EndOfStream)
             {
-                string line = proc.StandardError.ReadLine();
+                string line = await proc.StandardError.ReadLineAsync();
                 output.AppendLine(line);
                 if (console.HasExited) proc.Kill();
                 console.StandardInput.WriteLine(line);
@@ -520,7 +548,7 @@ namespace Youtuve_downloader
             Clipboard.SetText(processStartInfo.Arguments);
 
             var console = StartConsole();
-            console.StandardInput.WriteLine("Converting media please wait");
+            await console.StandardInput.WriteLineAsync("Converting media please wait");
             StringBuilder output = new StringBuilder();
             var proc = Process.Start(processStartInfo);
             while (!proc.StandardError.EndOfStream)
@@ -537,6 +565,7 @@ namespace Youtuve_downloader
 
             return proc.ExitCode == 0;
         }
+
         private static void ShowConversionError(string data)
         {
             Clipboard.SetText(data);
@@ -544,327 +573,30 @@ namespace Youtuve_downloader
             MessageBox.Show("An error has occurred converting video\n\n" + data, Application.ProductName, MessageBoxButtons.OK, MessageBoxIcon.Error);
         }
 
-        private void VideoStreamsComboBox_SelectedIndexChanged(object sender, EventArgs e) => oldVideoIndex = VideoStreamsComboBox.SelectedIndex;
-
         private void AudioStreamsComboBox_SelectedIndexChanged(object sender, EventArgs e) => oldAudioIndex = AudioStreamsComboBox.SelectedIndex;
 
+        private void VideoStreamsComboBox_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            oldVideoIndex = VideoStreamsComboBox.SelectedIndex;
+
+            videoQuality = videoStreamsInfo.ElementAt(VideoStreamsComboBox.SelectedIndex).VideoQuality;
+            FpsUpDown.Value = FpsUpDown.Maximum = videoQuality.Value.Framerate;
+        }
+
         private void ReEncodeAudioCheckBox_CheckedChanged(object sender, EventArgs e) => Config.Set("ReEncodeAudio", (AudioCodecsComboBox.Enabled = ReEncodeAudioCheckBox.Checked).ToString());
-        private void ReEncodeVideoCheckBox_CheckedChanged(object sender, EventArgs e) => Config.Set("ReEncodeVideo", (VideoCodecsComboBox.Enabled = ReEncodeVideoCheckBox.Checked).ToString());
 
-        // old crapy code
-        /*private async void DownloadFileWithProgress(string DownloadLink, string PathDe, bool WithLabel, ProgressBar LAbelsita)
-        {
-            DownloadButton.Text = "Descargando";
-            WriteLine("Descargando Archivo", false);
-
-            int bytesProcessed = 0;
-            Stream remoteStream = null;
-            Stream localStream = null;
-            WebResponse response = null;
-
-            var sw = Stopwatch.StartNew();
-            long AntiguoTiempo = 0;
-            int LastPercent = -1;
-
-            string TargetPath = GetFreePath(Path.GetTempPath(), GenerateRandomChars(30) + ".exe", 50);
-            try
-            {
-                WebRequest request = WebRequest.Create(DownloadLink);
-                if (request != null)
-                {
-                    double TotalBytesToReceive = 0;
-                    var SizewebRequest = HttpWebRequest.Create(new Uri(DownloadLink));
-                    SizewebRequest.Method = "HEAD";
-
-                    using (var webResponse = SizewebRequest.GetResponse())
-                    {
-                        var fileSize = webResponse.Headers.Get("Content-Length");
-
-                        WriteLine("Descargando desde los servidores de " + webResponse.Headers.Get("Server"), false);
-
-                        WriteLine("Archivo Suvido a los servidores a las " + webResponse.Headers.Get("Last-Modified"), false);
-
-                        if (fileSize != null)
-                        {
-                            WriteLine("Peso del archivo " + fileSize.ToString(), false);
-                            TotalBytesToReceive = Convert.ToDouble(fileSize);
-                        }
-                        else
-                        {
-                            WriteLine("Peso del archivo desconocido", false);
-                            TotalBytesToReceive = Convert.ToDouble(-1);
-                        }
-                    }
-
-                    response = request.GetResponse();
-                    if (response != null)
-                    {
-                        remoteStream = response.GetResponseStream();
-                        localStream = File.Create(TargetPath);
-                        byte[] buffer = new byte[1024];
-                        int bytesRead = 0;
-                        do
-                        {
-                            bytesRead = remoteStream.Read(buffer, 0, buffer.Length);
-                            localStream.Write(buffer, 0, bytesRead);
-                            bytesProcessed += bytesRead;
-                            double bytesIn = double.Parse(bytesProcessed.ToString());
-                            double percentage = Math.Round(bytesIn / TotalBytesToReceive * 100, 0);
-
-                            int Porcentaje = int.Parse(Math.Truncate(percentage).ToString());
-
-                            if (LastPercent != Porcentaje)
-                            {
-                                sw.Stop();
-
-                                LastPercent = Porcentaje;
-                                long MilisegundosRestantes = (((100 - Porcentaje) * sw.ElapsedMilliseconds) + AntiguoTiempo) / 2;
-
-                                AntiguoTiempo = MilisegundosRestantes;
-                                Log("Descargando datos " + MilisegundosToDate(MilisegundosRestantes) + " " + Porcentaje.ToString() + "% Completado");
-                                if (WithLabel & Porcentaje >= 0)
-                                {
-                                    LAbelsita.Value = Porcentaje;
-                                    LAbelsita.Maximum = 100;
-                                    this.Refresh();
-                                }
-                                sw.Restart();
-                            }
-                        } while (bytesRead > 0);
-                    }
-                }
-            }
-            catch (Exception ex)
-            {
-                Error(ex.ToString());
-            }
-            finally
-            {
-                if (response != null) response.Close();
-                if (remoteStream != null) remoteStream.Close();
-                if (localStream != null) localStream.Close();
-
-                if (File.Exists(PathDe))
-                {
-                    File.Delete(PathDe);
-                }
-
-                File.Move(TargetPath, PathDe);
-
-                if (File.Exists(TargetPath))
-                {
-                    File.Delete(TargetPath);
-                }
-                DownloadButton.Text = "Descargar";
-                DownloadButton.Enabled = true;
-            }
-        }
-        public static string WriteLine(string message, bool type)
-        {
-            Console.ForegroundColor = ConsoleColor.Magenta;
-            Console.Write("[");
-            Console.ForegroundColor = ConsoleColor.DarkRed;
-            Console.Write(DateTime.Now.ToString("dd/MM/yyyy HH:mm:ss"));
-            Console.ForegroundColor = ConsoleColor.Magenta;
-            Console.Write("]  ");
-
-            if (!type)
-            {
-                Console.ForegroundColor = ConsoleColor.Blue;
-                Console.Write("[");
-                Console.ForegroundColor = ConsoleColor.Yellow;
-                Console.Write(AsemblyName);
-                Console.ForegroundColor = ConsoleColor.Blue;
-                Console.Write("] " + message + "\n");
-            }
-            else
-            {
-                Console.ForegroundColor = ConsoleColor.DarkMagenta;
-                Console.Write("[");
-                Console.ForegroundColor = ConsoleColor.Blue;
-                Console.Write(AsemblyName);
-                Console.ForegroundColor = ConsoleColor.DarkMagenta;
-                Console.Write("] " + message + "\n");
-            }
-            return null;
-        }
-        public static string GetFreePath(string Directory, string FileName, int pum)
-        {
-            ApiWriteLine("Consiguiendo path libre", true);
-            if (!Directory.EndsWith("\\"))
-            {
-                Directory = Directory + "\\";
-            }
-            bool exist = File.Exists(Path.Combine(Directory + FileName));
-            var Filee = Path.Combine(Directory + FileName);
-            while (exist)
-            {
-                if (exist == true)
-                {
-                    Filee = Path.Combine(Directory + GenerateRandomChars(pum) + ".exe");
-                    exist = File.Exists(Filee);
-                    Thread.Sleep(50);
-                }
-            }
-            return Filee;
-        }
-        public static string ApiWriteLine(string message, bool type)
-        {
-            Console.ForegroundColor = ConsoleColor.Magenta;
-            Console.Write("[");
-            Console.ForegroundColor = ConsoleColor.DarkRed;
-            Console.Write(DateTime.Now.ToString("dd/MM/yyyy HH:mm:ss"));
-            Console.ForegroundColor = ConsoleColor.Magenta;
-            Console.Write("]  ");
-
-            if (!type)
-            {
-                Console.ForegroundColor = ConsoleColor.DarkCyan;
-                Console.Write("[");
-                Console.ForegroundColor = ConsoleColor.DarkYellow;
-                Console.Write(AsemblyName + " SClass");
-                Console.ForegroundColor = ConsoleColor.DarkCyan;
-                Console.Write("] " + message + "\n");
-            }
-            else
-            {
-                Console.ForegroundColor = ConsoleColor.Red;
-                Console.Write("[");
-                Console.ForegroundColor = ConsoleColor.Green;
-                Console.Write(AsemblyName + " DClass");
-                Console.ForegroundColor = ConsoleColor.Red;
-                Console.Write("] " + message + "\n");
-            }
-            return null;
-        }
-        public static string Log(string message)
-        {
-            Console.ForegroundColor = ConsoleColor.Blue;
-            Console.Write("[");
-            Console.ForegroundColor = ConsoleColor.White;
-            Console.Write("+");
-            Console.ForegroundColor = ConsoleColor.Blue;
-            Console.Write("] " + message);
-
-            if (!message.EndsWith("\n"))
-            {
-                Console.Write("\n");
-            }
-            return null;
-        }
-        public static string Error(string message)
-        {
-            Console.ForegroundColor = ConsoleColor.Red;
-            Console.Write("[");
-            Console.ForegroundColor = ConsoleColor.DarkRed;
-            Console.Write("+");
-            Console.ForegroundColor = ConsoleColor.Red;
-            Console.Write("] " + message);
-
-            if (!message.EndsWith("\n"))
-            {
-                Console.Write("\n");
-            }
-            return null;
-        }
-        public static string MilisegundosToDate(long Time)
-        {
-            string Date = "Milisegundos";
-            if (Time >= 1000)
-            {
-                Time = Time / 1000;
-
-                if (Time > 1)
-                {
-                    Date = "Segundos";
-                }
-                else
-                {
-                    Date = "Segundo";
-                }
-
-                if (Time > 60)
-                {
-                    Time = Time / 60;
-
-                    if (Time > 1)
-                    {
-                        Date = "Minutos";
-                    }
-                    else
-                    {
-                        Date = "Minuto";
-                    }
-
-                    if (Time >= 60)
-                    {
-                        Time = Time / 60;
-
-                        if (Time > 1)
-                        {
-                            Date = "Horas";
-                        }
-                        else
-                        {
-                            Date = "Hora";
-                        }
-
-                        if (Time >= 24)
-                        {
-                            Time = Time / 24;
-                            if (Time > 1)
-                            {
-                                Date = "Dias";
-                            }
-                            else
-                            {
-                                Date = "Dia";
-                            }
-                        }
-                    }
-                }
-            }
-
-            return (Time.ToString() + " " + Date + " Restantes");
-        }
-
-        public static string GenerateRandomChars(int Chars)
-        {
-            ApiWriteLine("Generando caracteres aleatorios", true);
-            var chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
-            var stringChars = new char[Chars];
-            var random = new Random();
-            for (int i = 0; i < stringChars.Length; i++)
-            {
-                stringChars[i] = chars[random.Next(chars.Length)];
-            }
-            return new string(stringChars);
-        }
-
-        private void YouTubeForm_Load(object sender, EventArgs e)
-        {
-        }
-
-        private void BitrateComboBox_SelectedIndexChanged(object sender, EventArgs e)
-        {
-        }*/
+        private void ReEncodeVideoCheckBox_CheckedChanged(object sender, EventArgs e) => Config.Set("ReEncodeVideo", (VideoCodecsComboBox.Enabled = FpsUpDown.Enabled = ReEncodeVideoCheckBox.Checked).ToString());
 
         public event EventHandler<ClipboardChangedEventArgs> ClipboardChanged;
 
-   
+        [DllImport("User32.dll")] protected static extern int SetClipboardViewer(int hWndNewViewer);
 
-        [DllImport("User32.dll")]
-        protected static extern int SetClipboardViewer(int hWndNewViewer);
+        [DllImport("User32.dll", CharSet = CharSet.Auto)] public static extern bool ChangeClipboardChain(IntPtr hWndRemove, IntPtr hWndNewNext);
 
-        [DllImport("User32.dll", CharSet = CharSet.Auto)]
-        public static extern bool ChangeClipboardChain(IntPtr hWndRemove, IntPtr hWndNewNext);
+        [DllImport("user32.dll", CharSet = CharSet.Auto)] public static extern int SendMessage(IntPtr hwnd, int wMsg, IntPtr wParam, IntPtr lParam);
 
-        [DllImport("user32.dll", CharSet = CharSet.Auto)]
-        public static extern int SendMessage(IntPtr hwnd, int wMsg, IntPtr wParam, IntPtr lParam);
-
-        protected override void WndProc(ref System.Windows.Forms.Message m)
+        protected override void WndProc(ref Message m)
         {
-            // defined in winuser.h
             const int WM_DRAWCLIPBOARD = 0x308;
             const int WM_CHANGECBCHAIN = 0x030D;
 
@@ -906,7 +638,63 @@ namespace Youtuve_downloader
         }
 
         private void VideoCodecsComboBox_SelectedIndexChanged(object sender, EventArgs e) => Config.Set("videoCodec", VideoCodecsComboBox.SelectedIndex.ToString());
+
         private void AudioCodecsComboBox_SelectedIndexChanged(object sender, EventArgs e) => Config.Set("audioCodec", AudioCodecsComboBox.SelectedIndex.ToString());
+
+        private VideoQuality? videoQuality { get; set; } = null;
+        private TimeSpan videoDuration { get; set; } = TimeSpan.Zero;
+        private TimeSpan tarjetStartTimeSpan = TimeSpan.Zero;
+        private TimeSpan tarjetEndTimeSpan = TimeSpan.Zero;
+
+        private string LastValidStartDate = string.Empty;
+
+        private void StartTextBox_TextChanged(object sender, EventArgs e)
+        {
+            TimeCheckTimer.Enabled = false;
+            TimeCheckTimer.Enabled = true;
+        }
+
+        private string LastValidEndDate = string.Empty;
+
+        private void EndTextBox_TextChanged(object sender, EventArgs e)
+        {
+            TimeCheckTimer.Enabled = false;
+            TimeCheckTimer.Enabled = true;
+        }
+
+        private bool TimeValid(string txt) => txt.Contains(':') && txt.Replace(":", "").Any(c => char.IsDigit(c)) && txt.Split(':').All(p => p.Length == 2);
+
+        private void TimeCheckTimer_Tick(object sender, EventArgs e)
+        {
+            TimeCheckTimer.Enabled = false;
+
+            if (TimeSpan.TryParseExact(StartTextBox.Text, new[] { @"hh\:mm\:ss", @"mm\:ss" }, null, out tarjetStartTimeSpan)
+                && tarjetStartTimeSpan.TotalSeconds >= 0
+                && tarjetStartTimeSpan.TotalSeconds < videoDuration.TotalSeconds)
+            {
+                LastValidStartDate = StartTextBox.Text;
+            }
+            else
+            {
+                StartTextBox.Text = LastValidStartDate;
+            }
+
+            if (TimeSpan.TryParseExact(EndTextBox.Text, new[] { @"hh\:mm\:ss", @"mm\:ss" }, null, out tarjetEndTimeSpan)
+                && tarjetEndTimeSpan.TotalSeconds >= 0
+                && tarjetEndTimeSpan.TotalSeconds <= videoDuration.TotalSeconds
+                && tarjetStartTimeSpan.TotalSeconds < tarjetEndTimeSpan.TotalSeconds)
+            {
+                LastValidEndDate = EndTextBox.Text;
+            }
+            else
+            {
+                EndTextBox.Text = LastValidEndDate;
+            }
+        }
+
+        private void FpsUpDown_ValueChanged(object sender, EventArgs e)
+        {
+        }
     }
 
     public class ClipboardChangedEventArgs : EventArgs

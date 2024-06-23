@@ -1,7 +1,5 @@
-﻿using System;
-using System.ComponentModel;
+﻿using System.ComponentModel;
 using System.Drawing;
-using System.Runtime.InteropServices;
 using System.Windows.Forms;
 
 namespace ClipboardAssist
@@ -10,7 +8,6 @@ namespace ClipboardAssist
     [DefaultEvent("ClipboardChanged")]
     public partial class ClipboardMonitor : Control
     {
-
         public ClipboardMonitor()
         {
             this.BackColor = Color.Red;
@@ -20,6 +17,5 @@ namespace ClipboardAssist
         /// <summary>
         /// Clipboard contents changed.
         /// </summary>
-
     }
 }

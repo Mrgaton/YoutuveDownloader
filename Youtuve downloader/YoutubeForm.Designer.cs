@@ -29,6 +29,7 @@ namespace Youtuve_downloader
         /// </summary>
         private void InitializeComponent()
         {
+            this.components = new System.ComponentModel.Container();
             System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(YouTubeForm));
             this.YoutubeLinkTextBox = new System.Windows.Forms.TextBox();
             this.YoutubeLinkLabel = new System.Windows.Forms.Label();
@@ -45,7 +46,15 @@ namespace Youtuve_downloader
             this.AudioCodecsComboBox = new System.Windows.Forms.ComboBox();
             this.VideoCodecsComboBox = new System.Windows.Forms.ComboBox();
             this.ReEncodeVideoCheckBox = new System.Windows.Forms.CheckBox();
+            this.StartTextBox = new System.Windows.Forms.TextBox();
+            this.StartLabel = new System.Windows.Forms.Label();
+            this.EndTextBox = new System.Windows.Forms.TextBox();
+            this.EndLabel = new System.Windows.Forms.Label();
+            this.TimeCheckTimer = new System.Windows.Forms.Timer(this.components);
+            this.FpsUpDown = new System.Windows.Forms.NumericUpDown();
+            this.FpsLabel = new System.Windows.Forms.Label();
             ((System.ComponentModel.ISupportInitialize)(this.VideoFotoPictureBox)).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)(this.FpsUpDown)).BeginInit();
             this.SuspendLayout();
             // 
             // YoutubeLinkTextBox
@@ -92,11 +101,11 @@ namespace Youtuve_downloader
             // DownloadButton
             // 
             this.DownloadButton.Enabled = false;
-            this.DownloadButton.Font = new System.Drawing.Font("Microsoft Sans Serif", 13.8F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.DownloadButton.Font = new System.Drawing.Font("Microsoft Sans Serif", 15.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.DownloadButton.Location = new System.Drawing.Point(565, 75);
             this.DownloadButton.Margin = new System.Windows.Forms.Padding(2);
             this.DownloadButton.Name = "DownloadButton";
-            this.DownloadButton.Size = new System.Drawing.Size(258, 48);
+            this.DownloadButton.Size = new System.Drawing.Size(258, 54);
             this.DownloadButton.TabIndex = 3;
             this.DownloadButton.Text = "Descargar";
             this.DownloadButton.UseVisualStyleBackColor = true;
@@ -105,7 +114,7 @@ namespace Youtuve_downloader
             // VideoFotoPictureBox
             // 
             this.VideoFotoPictureBox.BackColor = System.Drawing.SystemColors.ControlDark;
-            this.VideoFotoPictureBox.Location = new System.Drawing.Point(10, 127);
+            this.VideoFotoPictureBox.Location = new System.Drawing.Point(10, 133);
             this.VideoFotoPictureBox.Margin = new System.Windows.Forms.Padding(2);
             this.VideoFotoPictureBox.Name = "VideoFotoPictureBox";
             this.VideoFotoPictureBox.Size = new System.Drawing.Size(813, 458);
@@ -117,17 +126,17 @@ namespace Youtuve_downloader
             // VideoNameLabel
             // 
             this.VideoNameLabel.AutoSize = true;
-            this.VideoNameLabel.Font = new System.Drawing.Font("Microsoft Sans Serif", 15.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.VideoNameLabel.Location = new System.Drawing.Point(11, 100);
+            this.VideoNameLabel.Font = new System.Drawing.Font("Microsoft Sans Serif", 18F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.VideoNameLabel.Location = new System.Drawing.Point(5, 106);
             this.VideoNameLabel.Margin = new System.Windows.Forms.Padding(2, 0, 2, 0);
             this.VideoNameLabel.Name = "VideoNameLabel";
-            this.VideoNameLabel.Size = new System.Drawing.Size(180, 25);
+            this.VideoNameLabel.Size = new System.Drawing.Size(206, 29);
             this.VideoNameLabel.TabIndex = 5;
             this.VideoNameLabel.Text = "Nombre del video";
             // 
             // DownloadProgressBar
             // 
-            this.DownloadProgressBar.Location = new System.Drawing.Point(10, 589);
+            this.DownloadProgressBar.Location = new System.Drawing.Point(10, 595);
             this.DownloadProgressBar.Margin = new System.Windows.Forms.Padding(2);
             this.DownloadProgressBar.MarqueeAnimationSpeed = 30;
             this.DownloadProgressBar.Maximum = 1000;
@@ -231,11 +240,97 @@ namespace Youtuve_downloader
             this.ReEncodeVideoCheckBox.UseVisualStyleBackColor = true;
             this.ReEncodeVideoCheckBox.CheckedChanged += new System.EventHandler(this.ReEncodeVideoCheckBox_CheckedChanged);
             // 
+            // StartTextBox
+            // 
+            this.StartTextBox.Font = new System.Drawing.Font("Consolas", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.StartTextBox.Location = new System.Drawing.Point(334, 73);
+            this.StartTextBox.Name = "StartTextBox";
+            this.StartTextBox.Size = new System.Drawing.Size(78, 26);
+            this.StartTextBox.TabIndex = 15;
+            this.StartTextBox.TextChanged += new System.EventHandler(this.StartTextBox_TextChanged);
+            // 
+            // StartLabel
+            // 
+            this.StartLabel.AutoSize = true;
+            this.StartLabel.Font = new System.Drawing.Font("Microsoft Sans Serif", 16.2F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.StartLabel.Location = new System.Drawing.Point(274, 73);
+            this.StartLabel.Margin = new System.Windows.Forms.Padding(2, 0, 2, 0);
+            this.StartLabel.Name = "StartLabel";
+            this.StartLabel.Size = new System.Drawing.Size(64, 26);
+            this.StartLabel.TabIndex = 16;
+            this.StartLabel.Text = "Start:";
+            // 
+            // EndTextBox
+            // 
+            this.EndTextBox.Font = new System.Drawing.Font("Consolas", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.EndTextBox.Location = new System.Drawing.Point(473, 73);
+            this.EndTextBox.Name = "EndTextBox";
+            this.EndTextBox.Size = new System.Drawing.Size(88, 26);
+            this.EndTextBox.TabIndex = 17;
+            this.EndTextBox.TextChanged += new System.EventHandler(this.EndTextBox_TextChanged);
+            // 
+            // EndLabel
+            // 
+            this.EndLabel.AutoSize = true;
+            this.EndLabel.Font = new System.Drawing.Font("Microsoft Sans Serif", 16.2F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.EndLabel.Location = new System.Drawing.Point(417, 73);
+            this.EndLabel.Margin = new System.Windows.Forms.Padding(2, 0, 2, 0);
+            this.EndLabel.Name = "EndLabel";
+            this.EndLabel.Size = new System.Drawing.Size(57, 26);
+            this.EndLabel.TabIndex = 18;
+            this.EndLabel.Text = "End:";
+            // 
+            // TimeCheckTimer
+            // 
+            this.TimeCheckTimer.Interval = 750;
+            this.TimeCheckTimer.Tick += new System.EventHandler(this.TimeCheckTimer_Tick);
+            // 
+            // FpsUpDown
+            // 
+            this.FpsUpDown.Font = new System.Drawing.Font("Consolas", 15.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.FpsUpDown.Increment = new decimal(new int[] {
+            5,
+            0,
+            0,
+            0});
+            this.FpsUpDown.Location = new System.Drawing.Point(195, 73);
+            this.FpsUpDown.Minimum = new decimal(new int[] {
+            1,
+            0,
+            0,
+            0});
+            this.FpsUpDown.Name = "FpsUpDown";
+            this.FpsUpDown.Size = new System.Drawing.Size(79, 32);
+            this.FpsUpDown.TabIndex = 19;
+            this.FpsUpDown.Value = new decimal(new int[] {
+            30,
+            0,
+            0,
+            0});
+            this.FpsUpDown.ValueChanged += new System.EventHandler(this.FpsUpDown_ValueChanged);
+            // 
+            // FpsLabel
+            // 
+            this.FpsLabel.AutoSize = true;
+            this.FpsLabel.Font = new System.Drawing.Font("Microsoft Sans Serif", 16.2F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.FpsLabel.Location = new System.Drawing.Point(137, 73);
+            this.FpsLabel.Margin = new System.Windows.Forms.Padding(2, 0, 2, 0);
+            this.FpsLabel.Name = "FpsLabel";
+            this.FpsLabel.Size = new System.Drawing.Size(54, 26);
+            this.FpsLabel.TabIndex = 20;
+            this.FpsLabel.Text = "Fps:";
+            // 
             // YouTubeForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(826, 650);
+            this.Controls.Add(this.FpsLabel);
+            this.Controls.Add(this.FpsUpDown);
+            this.Controls.Add(this.VideoFotoPictureBox);
+            this.Controls.Add(this.EndTextBox);
+            this.Controls.Add(this.EndLabel);
+            this.Controls.Add(this.StartTextBox);
             this.Controls.Add(this.VideoStreamsComboBox);
             this.Controls.Add(this.VideoCodecsComboBox);
             this.Controls.Add(this.ReEncodeVideoCheckBox);
@@ -247,10 +342,10 @@ namespace Youtuve_downloader
             this.Controls.Add(this.VideoBoxLabel);
             this.Controls.Add(this.DownloadProgressBar);
             this.Controls.Add(this.VideoNameLabel);
-            this.Controls.Add(this.VideoFotoPictureBox);
             this.Controls.Add(this.FormatComboBox);
             this.Controls.Add(this.YoutubeLinkLabel);
             this.Controls.Add(this.YoutubeLinkTextBox);
+            this.Controls.Add(this.StartLabel);
             this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedSingle;
             this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
             this.Margin = new System.Windows.Forms.Padding(2);
@@ -260,6 +355,7 @@ namespace Youtuve_downloader
             this.Text = "Youtube Downloader By Mrgaton";
             this.Shown += new System.EventHandler(this.YouTubeForm_Shown);
             ((System.ComponentModel.ISupportInitialize)(this.VideoFotoPictureBox)).EndInit();
+            ((System.ComponentModel.ISupportInitialize)(this.FpsUpDown)).EndInit();
             this.ResumeLayout(false);
             this.PerformLayout();
 
@@ -282,6 +378,13 @@ namespace Youtuve_downloader
         private System.Windows.Forms.ComboBox AudioCodecsComboBox;
         private System.Windows.Forms.ComboBox VideoCodecsComboBox;
         private System.Windows.Forms.CheckBox ReEncodeVideoCheckBox;
+        private System.Windows.Forms.TextBox StartTextBox;
+        private System.Windows.Forms.Label StartLabel;
+        private System.Windows.Forms.TextBox EndTextBox;
+        private System.Windows.Forms.Label EndLabel;
+        private System.Windows.Forms.Timer TimeCheckTimer;
+        private System.Windows.Forms.NumericUpDown FpsUpDown;
+        private System.Windows.Forms.Label FpsLabel;
     }
 }
 
