@@ -53,6 +53,7 @@ namespace Youtuve_downloader
             this.TimeCheckTimer = new System.Windows.Forms.Timer(this.components);
             this.FpsUpDown = new System.Windows.Forms.NumericUpDown();
             this.FpsLabel = new System.Windows.Forms.Label();
+            this.MinterpolateCheckBox = new System.Windows.Forms.CheckBox();
             ((System.ComponentModel.ISupportInitialize)(this.VideoFotoPictureBox)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.FpsUpDown)).BeginInit();
             this.SuspendLayout();
@@ -263,7 +264,7 @@ namespace Youtuve_downloader
             // EndTextBox
             // 
             this.EndTextBox.Font = new System.Drawing.Font("Consolas", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.EndTextBox.Location = new System.Drawing.Point(473, 73);
+            this.EndTextBox.Location = new System.Drawing.Point(472, 73);
             this.EndTextBox.Name = "EndTextBox";
             this.EndTextBox.Size = new System.Drawing.Size(88, 26);
             this.EndTextBox.TabIndex = 17;
@@ -273,7 +274,7 @@ namespace Youtuve_downloader
             // 
             this.EndLabel.AutoSize = true;
             this.EndLabel.Font = new System.Drawing.Font("Microsoft Sans Serif", 16.2F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.EndLabel.Location = new System.Drawing.Point(417, 73);
+            this.EndLabel.Location = new System.Drawing.Point(417, 74);
             this.EndLabel.Margin = new System.Windows.Forms.Padding(2, 0, 2, 0);
             this.EndLabel.Name = "EndLabel";
             this.EndLabel.Size = new System.Drawing.Size(57, 26);
@@ -313,12 +314,24 @@ namespace Youtuve_downloader
             // 
             this.FpsLabel.AutoSize = true;
             this.FpsLabel.Font = new System.Drawing.Font("Microsoft Sans Serif", 16.2F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.FpsLabel.Location = new System.Drawing.Point(137, 73);
+            this.FpsLabel.Location = new System.Drawing.Point(141, 74);
             this.FpsLabel.Margin = new System.Windows.Forms.Padding(2, 0, 2, 0);
             this.FpsLabel.Name = "FpsLabel";
             this.FpsLabel.Size = new System.Drawing.Size(54, 26);
             this.FpsLabel.TabIndex = 20;
             this.FpsLabel.Text = "Fps:";
+            // 
+            // MinterpolateCheckBox
+            // 
+            this.MinterpolateCheckBox.AutoSize = true;
+            this.MinterpolateCheckBox.Font = new System.Drawing.Font("Microsoft Sans Serif", 14.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.MinterpolateCheckBox.Location = new System.Drawing.Point(14, 74);
+            this.MinterpolateCheckBox.Name = "MinterpolateCheckBox";
+            this.MinterpolateCheckBox.Size = new System.Drawing.Size(132, 28);
+            this.MinterpolateCheckBox.TabIndex = 21;
+            this.MinterpolateCheckBox.Text = "Minterpolate";
+            this.MinterpolateCheckBox.UseVisualStyleBackColor = true;
+            this.MinterpolateCheckBox.CheckedChanged += new System.EventHandler(this.MinterpolateCheckBox_CheckedChanged);
             // 
             // YouTubeForm
             // 
@@ -346,6 +359,7 @@ namespace Youtuve_downloader
             this.Controls.Add(this.YoutubeLinkLabel);
             this.Controls.Add(this.YoutubeLinkTextBox);
             this.Controls.Add(this.StartLabel);
+            this.Controls.Add(this.MinterpolateCheckBox);
             this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedSingle;
             this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
             this.Margin = new System.Windows.Forms.Padding(2);
@@ -385,6 +399,7 @@ namespace Youtuve_downloader
         private System.Windows.Forms.Timer TimeCheckTimer;
         private System.Windows.Forms.NumericUpDown FpsUpDown;
         private System.Windows.Forms.Label FpsLabel;
+        private System.Windows.Forms.CheckBox MinterpolateCheckBox;
     }
 }
 
