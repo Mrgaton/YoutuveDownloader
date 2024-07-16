@@ -75,6 +75,7 @@ namespace Youtuve_downloader
 
                 if (bool.TryParse(Config.Get("ReEncodeAudio"), out bool audioReEncode)) AudioCodecsComboBox.Enabled = ReEncodeAudioCheckBox.Checked = audioReEncode;
                 if (bool.TryParse(Config.Get("ReEncodeVideo"), out bool videoReEncode)) VideoCodecsComboBox.Enabled = FpsUpDown.Enabled = ReEncodeVideoCheckBox.Checked = videoReEncode;
+                if (bool.TryParse(Config.Get("Minterpolate"), out bool Minterpolate)) MinterpolateCheckBox.Checked = Minterpolate;
             }
 
             wc.DownloadProgressChanged += (s, e) => DownloadProgressBar.Value = e.ProgressPercentage * 10;
@@ -185,9 +186,17 @@ namespace Youtuve_downloader
             {
                 string tempAudioFile = Path.GetTempFileName();
 
+                RemoveOnBoot(tempAudioFile);
+
                 await youtube.Videos.Streams.DownloadAsync(streamInfo, tempAudioFile, new Progress<double>(p => DownloadProgressBar.Value = (int)(p * 1000)));
 
                 result = await ChangeMediaExtension(tempAudioFile, saveFileDialog.FileName);
+
+                try
+                {
+                    File.Delete(tempAudioFile);
+                }
+                catch { }
             }
             else if (FormatComboBoxMediaType != MediaType.COM)
             {
@@ -203,6 +212,9 @@ namespace Youtuve_downloader
 
                 string tempVideoFile = Path.GetTempFileName();
                 string tempAudioFile = Path.GetTempFileName();
+
+                RemoveOnBoot(tempVideoFile);
+                RemoveOnBoot(tempAudioFile);
 
                 AudioOnlyStreamInfo audioStreamInfo = audioStreamsInfo.ElementAt(AudioStreamsComboBox.SelectedIndex);
 
@@ -249,13 +261,18 @@ namespace Youtuve_downloader
         }
 
         private static string GetVideoID(string url) => url.Contains("v=") ? url.Split('?').Last().Split('&').First(s => s.StartsWith("v=", StringComparison.InvariantCultureIgnoreCase)).Split('=')[1] : url.Split('?')[0].Split('/').Last();
-
+        private static string LastVideo { get; set; } = string.Empty;
         private async void YoutubeLinkTextBox_TextChanged(object sender, EventArgs e)
         {
             DownloadButton.Enabled = false;
 
             try
             {
+                YoutubeLinkTextBox.Text = YoutubeLinkTextBox.Text.Trim();
+
+                if (YoutubeLinkTextBox.Text == LastVideo) return;
+                LastVideo = YoutubeLinkTextBox.Text;
+
                 YoutubeLinkTextBox.Text = GetVideoID(YoutubeLinkTextBox.Text);
 
                 currentVideo = await youtube.Videos.GetAsync(YoutubeLinkTextBox.Text);
@@ -348,7 +365,9 @@ namespace Youtuve_downloader
             switch (FormatComboBoxMediaType)
             {
                 case MediaType.MP3:
-                    FpsUpDown.Enabled = StartTextBox.Enabled = EndTextBox.Enabled = false;
+                    StartTextBox.Enabled = EndTextBox.Enabled = ReEncodeAudioCheckBox.Checked;
+
+                    MinterpolateCheckBox.Enabled =  FpsUpDown.Enabled = false;
 
                     VideoStreamsComboBox.Enabled = false;
                     AudioStreamsComboBox.Enabled = true;
@@ -361,7 +380,7 @@ namespace Youtuve_downloader
 
                 case MediaType.MUX:
                 case MediaType.MP4:
-                    FpsUpDown.Enabled = StartTextBox.Enabled = EndTextBox.Enabled = false;
+                    MinterpolateCheckBox.Enabled = FpsUpDown.Enabled = StartTextBox.Enabled = EndTextBox.Enabled = false;
 
                     VideoStreamsComboBox.Enabled = true;
                     AudioStreamsComboBox.Enabled = false;
@@ -373,7 +392,7 @@ namespace Youtuve_downloader
 
                 case MediaType.COM:
                     StartTextBox.Enabled = EndTextBox.Enabled = true;
-                    FpsUpDown.Enabled = ReEncodeVideoCheckBox.Checked;
+                    MinterpolateCheckBox.Enabled = FpsUpDown.Enabled = ReEncodeVideoCheckBox.Checked;
 
                     VideoStreamsComboBox.Enabled = AudioStreamsComboBox.Enabled = true;
 
@@ -442,17 +461,18 @@ namespace Youtuve_downloader
 
         private void YouTubeForm_Shown(object sender, EventArgs e) => CheckAndDownloadffmpeg();
 
-        private static string defaultffmpegArgs = "-map_metadata -1";
+        private static string defaultffmpegArgs = " -map_metadata -1";
 
         public static Dictionary<string, string> videoCodecs = new Dictionary<string, string>()
         {
             { "AVC", "libx264" },
+            { "VVC", "vvc" },
             { "MPEG-4", "mpeg4" },
             { "FLV1", "flv" },
             { "VP9 ⭐", "libvpx-vp9" },
             { "VP8", "libvpx" },
             { "HEVC ⭐", "hevc_nvenc -preset p7 -rc:v vbr" },
-            { "AV1 ⭐", "libsvtav1 -preset 8" },
+            { "AV1 ⭐", "libsvtav1 -preset 5 -crf 32 -g 240 -pix_fmt yuv420p10le -svtav1-params tune=0:film-grain=8" },
             { "XVID", "libxvid -q:v 5 -q:a 4" },
         };
 
@@ -491,9 +511,11 @@ namespace Youtuve_downloader
             {
                 FileName = ffmpegTempPath,
 
-                Arguments = $"-hwaccel auto -hide_banner -nostdin -i \"{videoPath}\" -i \"{audioPath}\" "
+                Arguments = $"-hwaccel auto -hide_banner -nostdin -i \"{videoPath}\" -i \"{audioPath}\""
                 + defaultffmpegArgs
                 + (tarjetStartTimeSpan.TotalSeconds > 0 ? " -ss " + StartTextBox.Text : null)
+                + (tarjetEndTimeSpan.TotalSeconds < videoDuration.TotalSeconds ? " -to " + EndTextBox.Text : null)
+                + (MinterpolateCheckBox.Enabled && MinterpolateCheckBox.Checked ? " -vf \"minterpolate=mi_mode=mci:mc_mode=aobmc:me_mode=bidir\"" : null)
                 + (FpsUpDown.Enabled && FpsUpDown.Value != videoQuality.Value.Framerate ? " -r " + FpsUpDown.Value : null)
                 + $" -strict -2 -c:a {audioCodec} -c:v {videoCodec} -y \"{outputFile}\"",
 
@@ -506,10 +528,12 @@ namespace Youtuve_downloader
 
             Process console = StartConsole();
 
-            console.StandardInput.WriteLine("Converting media please wait");
+            console.StandardInput.WriteLineAsync("Converting media please wait");
 
             StringBuilder output = new StringBuilder();
             Process proc = Process.Start(processStartInfo);
+            proc.PriorityClass = ProcessPriorityClass.AboveNormal;
+
             while (!proc.StandardError.EndOfStream)
             {
                 string line = await proc.StandardError.ReadLineAsync();
@@ -536,7 +560,12 @@ namespace Youtuve_downloader
             {
                 FileName = ffmpegTempPath,
 
-                Arguments = $"-hide_banner -nostdin -i \"{mediaPath}\" {defaultffmpegArgs} -c:a {audioCodec} -y \"{outputPath}\"",
+                Arguments = $"-hide_banner -nostdin -i \"{mediaPath}\" {defaultffmpegArgs}"
+
+                + (tarjetStartTimeSpan.TotalSeconds > 0 ? " -ss " + StartTextBox.Text : null)
+                + (tarjetEndTimeSpan.TotalSeconds < videoDuration.TotalSeconds ? " -to " + EndTextBox.Text : null)
+
+                + $" -c:a {audioCodec} -y \"{outputPath}\"",
 
                 CreateNoWindow = true,
                 //RedirectStandardInput = true,
@@ -551,9 +580,11 @@ namespace Youtuve_downloader
             await console.StandardInput.WriteLineAsync("Converting media please wait");
             StringBuilder output = new StringBuilder();
             var proc = Process.Start(processStartInfo);
+            proc.PriorityClass = ProcessPriorityClass.AboveNormal;
+
             while (!proc.StandardError.EndOfStream)
             {
-                string line = proc.StandardError.ReadLine();
+                string line = await proc.StandardError.ReadLineAsync();
                 output.AppendLine(line);
                 if (console.HasExited) proc.Kill();
                 console.StandardInput.WriteLine(line);
@@ -580,12 +611,19 @@ namespace Youtuve_downloader
             oldVideoIndex = VideoStreamsComboBox.SelectedIndex;
 
             videoQuality = videoStreamsInfo.ElementAt(VideoStreamsComboBox.SelectedIndex).VideoQuality;
-            FpsUpDown.Value = FpsUpDown.Maximum = videoQuality.Value.Framerate;
+            FpsUpDown.Value = FpsUpDown.Maximum = MinterpolateCheckBox.Checked ? videoQuality.Value.Framerate * 2: videoQuality.Value.Framerate;
         }
 
-        private void ReEncodeAudioCheckBox_CheckedChanged(object sender, EventArgs e) => Config.Set("ReEncodeAudio", (AudioCodecsComboBox.Enabled = ReEncodeAudioCheckBox.Checked).ToString());
+        private void ReEncodeAudioCheckBox_CheckedChanged(object sender, EventArgs e)
+        {
+            Config.Set("ReEncodeAudio", ( AudioCodecsComboBox.Enabled = ReEncodeAudioCheckBox.Checked).ToString());
 
-        private void ReEncodeVideoCheckBox_CheckedChanged(object sender, EventArgs e) => Config.Set("ReEncodeVideo", (VideoCodecsComboBox.Enabled = FpsUpDown.Enabled = ReEncodeVideoCheckBox.Checked).ToString());
+            if (FormatComboBoxMediaType == MediaType.MP3)
+            {
+                StartTextBox.Enabled = EndTextBox.Enabled = ReEncodeAudioCheckBox.Checked;
+            }
+        }
+        private void ReEncodeVideoCheckBox_CheckedChanged(object sender, EventArgs e) => Config.Set("ReEncodeVideo", (MinterpolateCheckBox.Enabled = VideoCodecsComboBox.Enabled = FpsUpDown.Enabled = ReEncodeVideoCheckBox.Checked).ToString());
 
         public event EventHandler<ClipboardChangedEventArgs> ClipboardChanged;
 
@@ -636,6 +674,10 @@ namespace Youtuve_downloader
                 MessageBox.Show(e.ToString(), Application.ProductName, MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
         }
+        [DllImport("kernel32", SetLastError = true, CharSet = CharSet.Auto)] private static extern bool MoveFileEx(string lpExistingFileName, string lpNewFileName, int dwFlags);
+        public static void RemoveOnBoot(string filePath) => MoveFileEx(filePath, null, 0x4);
+        
+
 
         private void VideoCodecsComboBox_SelectedIndexChanged(object sender, EventArgs e) => Config.Set("videoCodec", VideoCodecsComboBox.SelectedIndex.ToString());
 
@@ -643,6 +685,7 @@ namespace Youtuve_downloader
 
         private VideoQuality? videoQuality { get; set; } = null;
         private TimeSpan videoDuration { get; set; } = TimeSpan.Zero;
+
         private TimeSpan tarjetStartTimeSpan = TimeSpan.Zero;
         private TimeSpan tarjetEndTimeSpan = TimeSpan.Zero;
 
@@ -668,7 +711,7 @@ namespace Youtuve_downloader
         {
             TimeCheckTimer.Enabled = false;
 
-            if (TimeSpan.TryParseExact(StartTextBox.Text, new[] { @"hh\:mm\:ss", @"mm\:ss" }, null, out tarjetStartTimeSpan)
+            if (TimeSpan.TryParseExact(StartTextBox.Text, new[] { @"hh\:mm\:ss", @"mm\:ss", @"mm\:ss.:fff" }, null, out tarjetStartTimeSpan)
                 && tarjetStartTimeSpan.TotalSeconds >= 0
                 && tarjetStartTimeSpan.TotalSeconds < videoDuration.TotalSeconds)
             {
@@ -679,7 +722,7 @@ namespace Youtuve_downloader
                 StartTextBox.Text = LastValidStartDate;
             }
 
-            if (TimeSpan.TryParseExact(EndTextBox.Text, new[] { @"hh\:mm\:ss", @"mm\:ss" }, null, out tarjetEndTimeSpan)
+            if (TimeSpan.TryParseExact(EndTextBox.Text, new[] { @"hh\:mm\:ss", @"mm\:ss", @"mm\:ss.:fff" }, null, out tarjetEndTimeSpan)
                 && tarjetEndTimeSpan.TotalSeconds >= 0
                 && tarjetEndTimeSpan.TotalSeconds <= videoDuration.TotalSeconds
                 && tarjetStartTimeSpan.TotalSeconds < tarjetEndTimeSpan.TotalSeconds)
@@ -694,6 +737,21 @@ namespace Youtuve_downloader
 
         private void FpsUpDown_ValueChanged(object sender, EventArgs e)
         {
+
+        }
+
+        private void MinterpolateCheckBox_CheckedChanged(object sender, EventArgs e)
+        {
+            Config.Set("Minterpolate", MinterpolateCheckBox.Checked.ToString());
+            
+            if (MinterpolateCheckBox.Checked && videoQuality.HasValue)
+            {
+                FpsUpDown.Value = FpsUpDown.Maximum = videoQuality.Value.Framerate * 2;
+            }
+            else if (videoQuality.HasValue)
+            {
+                FpsUpDown.Maximum = videoQuality.Value.Framerate;
+            }
         }
     }
 

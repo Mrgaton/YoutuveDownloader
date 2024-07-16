@@ -5,6 +5,7 @@ using System.Windows.Forms;
 namespace ClipboardAssist
 {
     // https://stackoverflow.com/a/1394225/14735918
+
     [DefaultEvent("ClipboardChanged")]
     public partial class ClipboardMonitor : Control
     {
