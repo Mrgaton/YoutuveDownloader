@@ -14,6 +14,7 @@ using System.Windows.Forms;
 using Youtube_downloader;
 using YoutubeExplode;
 using YoutubeExplode.Videos;
+using YoutubeExplode.Videos.ClosedCaptions;
 using YoutubeExplode.Videos.Streams;
 
 namespace Youtuve_downloader
@@ -29,6 +30,7 @@ namespace Youtuve_downloader
         public static IEnumerable<AudioOnlyStreamInfo> audioStreamsInfo { get; set; }
         public static IEnumerable<VideoOnlyStreamInfo> videoStreamsInfo { get; set; }
         public static IEnumerable<MuxedStreamInfo> muxedStreamsInfo { get; set; }
+        public static IEnumerable<ClosedCaptionTrackInfo> trackInfos { get; set; }
 
         public static string AsemblyName = Assembly.GetEntryAssembly().GetName().Name.ToString();
 
@@ -159,7 +161,7 @@ namespace Youtuve_downloader
             }
             else if (FormatComboBoxMediaType == MediaType.MP4 || FormatComboBoxMediaType == MediaType.MUX || FormatComboBoxMediaType == MediaType.COM)
             {
-                saveFileDialog.Filter = "MP4 Video|*.mp4|AVI Video|*.avi|MOV Video|*.mov|MKV Video|*.mkv|FLV Video|*.flv;";
+                saveFileDialog.Filter = "MP4 Video|*.mp4|MKV Video|*.mkv|AVI Video|*.avi|MOV Video|*.mov|FLV Video|*.flv;";
             }
 
             saveFileDialog.Title = "Interesting question";
@@ -261,7 +263,9 @@ namespace Youtuve_downloader
         }
 
         private static string GetVideoID(string url) => url.Contains("v=") ? url.Split('?').Last().Split('&').First(s => s.StartsWith("v=", StringComparison.InvariantCultureIgnoreCase)).Split('=')[1] : url.Split('?')[0].Split('/').Last();
+
         private static string LastVideo { get; set; } = string.Empty;
+
         private async void YoutubeLinkTextBox_TextChanged(object sender, EventArgs e)
         {
             DownloadButton.Enabled = false;
@@ -308,6 +312,18 @@ namespace Youtuve_downloader
                 muxedStreamsInfo = currentStreamManifest.GetMuxedStreams().OrderByDescending(c => c.Bitrate.BitsPerSecond);
 
                 UpdateStreams();
+
+                var captionsManifest = await youtube.Videos.ClosedCaptions.GetManifestAsync(currentVideo.Id);
+
+                trackInfos = captionsManifest.Tracks;
+
+                foreach (var t in trackInfos)
+                {
+                    //Clipboard.SetText(t.Url);
+                    Console.WriteLine(t.Language);
+                    Console.WriteLine(t.Url);
+                    Console.WriteLine();
+                }
 
                 DownloadButton.Enabled = true;
             }
@@ -367,7 +383,7 @@ namespace Youtuve_downloader
                 case MediaType.MP3:
                     StartTextBox.Enabled = EndTextBox.Enabled = ReEncodeAudioCheckBox.Checked;
 
-                    MinterpolateCheckBox.Enabled =  FpsUpDown.Enabled = false;
+                    MinterpolateCheckBox.Enabled = FpsUpDown.Enabled = false;
 
                     VideoStreamsComboBox.Enabled = false;
                     AudioStreamsComboBox.Enabled = true;
@@ -435,6 +451,8 @@ namespace Youtuve_downloader
 
         private async Task CheckAndDownloadffmpeg()
         {
+            this.Focus();
+
             if (!File.Exists(ffmpegTempPath))
             {
                 if (MessageBox.Show("FFMPEG is not downloaded you want to download it to temp files?", Application.ProductName, MessageBoxButtons.OKCancel, MessageBoxIcon.Question) != DialogResult.OK)
@@ -456,12 +474,12 @@ namespace Youtuve_downloader
                 await wc.DownloadFileTaskAsync($"https://raw.githubusercontent.com/Mrgaton/ffmpegDownload/main/{Path.GetFileNameWithoutExtension(ffmpegTempPath)}-full_build/ffmpeg.exe", ffmpegTempPath);
 
                 foreach (var dic in originalValues) dic.Key.Enabled = dic.Value;
+
+                DownloadButton.Enabled = true;
             }
         }
 
         private void YouTubeForm_Shown(object sender, EventArgs e) => CheckAndDownloadffmpeg();
-
-        private static string defaultffmpegArgs = " -map_metadata -1";
 
         public static Dictionary<string, string> videoCodecs = new Dictionary<string, string>()
         {
@@ -472,7 +490,7 @@ namespace Youtuve_downloader
             { "VP9 ⭐", "libvpx-vp9" },
             { "VP8", "libvpx" },
             { "HEVC ⭐", "hevc_nvenc -preset p7 -rc:v vbr" },
-            { "AV1 ⭐", "libsvtav1 -preset 5 -crf 32 -g 240 -pix_fmt yuv420p10le -svtav1-params tune=0:film-grain=8" },
+            { "AV1 ⭐", "libsvtav1 -preset 1 -crf 32 -g 240 -pix_fmt yuv420p10le -svtav1-params tune=0:film-grain=8" },
             { "XVID", "libxvid -q:v 5 -q:a 4" },
         };
 
@@ -481,7 +499,7 @@ namespace Youtuve_downloader
             { "WAV","pcm_s16le" },
             { "FLAC","flac -sample_fmt s16 -compression_level 8" },
             { "AAC ⭐","aac" },
-            { "OPUS ⭐","opus -strict -2 -vbr on -compression_level 10 -frame_duration 40" },
+            { "OPUS ⭐","opus -strict -2 -vbr on -compression_level 10 -frame_duration 60" },
             { "OGG","libvorbis" },
             { "MP3","libmp3lame" }
         };
@@ -500,7 +518,47 @@ namespace Youtuve_downloader
 
             return proc;
         }
+        
+        public static async Task<string> CreateSubtitlesFFMPEGCommand()
+        {
+            Dictionary<string, string> srts = new Dictionary<string, string>();
 
+            foreach (var s in trackInfos)
+            {
+                try
+                {
+                    string filePath = Path.Combine(Path.GetTempPath(), ((uint)s.Url.GetHashCode()) + ".srt");
+                    string subtitlesData = SubRipSubtitleConvertor.XmlToSrt(Encoding.UTF8.GetString(await wc.DownloadDataTaskAsync(s.Url)));
+
+                    //Console.WriteLine(subtitlesData);
+
+                    File.WriteAllText(filePath, subtitlesData,Encoding.UTF8);
+                    RemoveOnBoot(filePath);
+                    srts.Add(filePath, s.Language.ToString());
+                }
+                catch (Exception ex)
+                {
+                    MessageBox.Show(ex.ToString(), Application.ProductName, MessageBoxButtons.OK, MessageBoxIcon.Error);
+                }
+            }
+
+            StringBuilder sb = new StringBuilder();
+            int index = 0;
+
+            foreach(var srt in srts)
+            {
+                sb.Append($" -i \"{srt.Key}\"");
+            }
+            
+            sb.Append($" -map 0 -map 1" + string .Join(" ", Enumerable.Range(2, srts.Count).Select(i => $" -map {i}")));
+
+            foreach (var srt in srts)
+            {
+                sb.Append($" -c:s:{index} srt -metadata:s:s:{index++} language=\"{srt.Value}\"");
+            }
+
+            return sb.ToString();
+        }
         private async Task<bool> CombineAudioAndVideo(string videoPath, string audioPath, string outputFile)
         {
             string videoCodec = (ReEncodeVideoCheckBox.Checked ? videoCodecs[VideoCodecsComboBox.Items[VideoCodecsComboBox.SelectedIndex].ToString()] : "copy");
@@ -512,10 +570,10 @@ namespace Youtuve_downloader
                 FileName = ffmpegTempPath,
 
                 Arguments = $"-hwaccel auto -hide_banner -nostdin -i \"{videoPath}\" -i \"{audioPath}\""
-                + defaultffmpegArgs
+                + (SubtitlesCheckbox.Checked ? await CreateSubtitlesFFMPEGCommand() : null)
                 + (tarjetStartTimeSpan.TotalSeconds > 0 ? " -ss " + StartTextBox.Text : null)
                 + (tarjetEndTimeSpan.TotalSeconds < videoDuration.TotalSeconds ? " -to " + EndTextBox.Text : null)
-                + (MinterpolateCheckBox.Enabled && MinterpolateCheckBox.Checked ? " -vf \"minterpolate=mi_mode=mci:mc_mode=aobmc:me_mode=bidir\"" : null)
+                + (MinterpolateCheckBox.Enabled && MinterpolateCheckBox.Checked ? " -vf \"minterpolate=mi_mode=mci:mc_mode=aobmc:me_mode=bidir\"" : null) // 
                 + (FpsUpDown.Enabled && FpsUpDown.Value != videoQuality.Value.Framerate ? " -r " + FpsUpDown.Value : null)
                 + $" -strict -2 -c:a {audioCodec} -c:v {videoCodec} -y \"{outputFile}\"",
 
@@ -525,6 +583,8 @@ namespace Youtuve_downloader
                 RedirectStandardOutput = false,
                 UseShellExecute = false
             };
+
+            Console.WriteLine("Running ffmpeg with commands: " + processStartInfo.Arguments);
 
             Process console = StartConsole();
 
@@ -560,7 +620,7 @@ namespace Youtuve_downloader
             {
                 FileName = ffmpegTempPath,
 
-                Arguments = $"-hide_banner -nostdin -i \"{mediaPath}\" {defaultffmpegArgs}"
+                Arguments = $"-hide_banner -nostdin -i \"{mediaPath}\" -map_metadata -1"
 
                 + (tarjetStartTimeSpan.TotalSeconds > 0 ? " -ss " + StartTextBox.Text : null)
                 + (tarjetEndTimeSpan.TotalSeconds < videoDuration.TotalSeconds ? " -to " + EndTextBox.Text : null)
@@ -611,18 +671,19 @@ namespace Youtuve_downloader
             oldVideoIndex = VideoStreamsComboBox.SelectedIndex;
 
             videoQuality = videoStreamsInfo.ElementAt(VideoStreamsComboBox.SelectedIndex).VideoQuality;
-            FpsUpDown.Value = FpsUpDown.Maximum = MinterpolateCheckBox.Checked ? videoQuality.Value.Framerate * 2: videoQuality.Value.Framerate;
+            FpsUpDown.Value = FpsUpDown.Maximum = MinterpolateCheckBox.Checked ? videoQuality.Value.Framerate * 2 : videoQuality.Value.Framerate;
         }
 
         private void ReEncodeAudioCheckBox_CheckedChanged(object sender, EventArgs e)
         {
-            Config.Set("ReEncodeAudio", ( AudioCodecsComboBox.Enabled = ReEncodeAudioCheckBox.Checked).ToString());
+            Config.Set("ReEncodeAudio", (AudioCodecsComboBox.Enabled = ReEncodeAudioCheckBox.Checked).ToString());
 
             if (FormatComboBoxMediaType == MediaType.MP3)
             {
                 StartTextBox.Enabled = EndTextBox.Enabled = ReEncodeAudioCheckBox.Checked;
             }
         }
+
         private void ReEncodeVideoCheckBox_CheckedChanged(object sender, EventArgs e) => Config.Set("ReEncodeVideo", (MinterpolateCheckBox.Enabled = VideoCodecsComboBox.Enabled = FpsUpDown.Enabled = ReEncodeVideoCheckBox.Checked).ToString());
 
         public event EventHandler<ClipboardChangedEventArgs> ClipboardChanged;
@@ -674,10 +735,10 @@ namespace Youtuve_downloader
                 MessageBox.Show(e.ToString(), Application.ProductName, MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
         }
-        [DllImport("kernel32", SetLastError = true, CharSet = CharSet.Auto)] private static extern bool MoveFileEx(string lpExistingFileName, string lpNewFileName, int dwFlags);
-        public static void RemoveOnBoot(string filePath) => MoveFileEx(filePath, null, 0x4);
-        
 
+        [DllImport("kernel32", SetLastError = true, CharSet = CharSet.Auto)] private static extern bool MoveFileEx(string lpExistingFileName, string lpNewFileName, int dwFlags);
+
+        public static void RemoveOnBoot(string filePath) => MoveFileEx(filePath, null, 0x4);
 
         private void VideoCodecsComboBox_SelectedIndexChanged(object sender, EventArgs e) => Config.Set("videoCodec", VideoCodecsComboBox.SelectedIndex.ToString());
 
@@ -735,15 +796,10 @@ namespace Youtuve_downloader
             }
         }
 
-        private void FpsUpDown_ValueChanged(object sender, EventArgs e)
-        {
-
-        }
-
         private void MinterpolateCheckBox_CheckedChanged(object sender, EventArgs e)
         {
             Config.Set("Minterpolate", MinterpolateCheckBox.Checked.ToString());
-            
+
             if (MinterpolateCheckBox.Checked && videoQuality.HasValue)
             {
                 FpsUpDown.Value = FpsUpDown.Maximum = videoQuality.Value.Framerate * 2;
@@ -752,6 +808,11 @@ namespace Youtuve_downloader
             {
                 FpsUpDown.Maximum = videoQuality.Value.Framerate;
             }
+        }
+
+        private void SubtitlesCheckbox_CheckedChanged(object sender, EventArgs e)
+        {
+
         }
     }
 
