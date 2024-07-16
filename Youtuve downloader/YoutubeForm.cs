@@ -592,7 +592,7 @@ namespace Youtuve_downloader
 
             StringBuilder output = new StringBuilder();
             Process proc = Process.Start(processStartInfo);
-            proc.PriorityClass = ProcessPriorityClass.AboveNormal;
+            proc.PriorityClass = ProcessPriorityClass.Idle;
 
             while (!proc.StandardError.EndOfStream)
             {
@@ -640,7 +640,7 @@ namespace Youtuve_downloader
             await console.StandardInput.WriteLineAsync("Converting media please wait");
             StringBuilder output = new StringBuilder();
             var proc = Process.Start(processStartInfo);
-            proc.PriorityClass = ProcessPriorityClass.AboveNormal;
+            proc.PriorityClass = ProcessPriorityClass.Idle;
 
             while (!proc.StandardError.EndOfStream)
             {
