@@ -471,11 +471,24 @@ namespace Youtuve_downloader
                     c.Enabled = false;
                 }
 
-                await wc.DownloadFileTaskAsync($"https://raw.githubusercontent.com/Mrgaton/ffmpegDownload/main/{Path.GetFileNameWithoutExtension(ffmpegTempPath)}-full_build/ffmpeg.exe", ffmpegTempPath);
+                try
+                {
+                    await wc.DownloadFileTaskAsync($"https://raw.githubusercontent.com/Mrgaton/ffmpegDownload/main/{Path.GetFileNameWithoutExtension(ffmpegTempPath)}-full_build/ffmpeg.exe", ffmpegTempPath);
 
-                foreach (var dic in originalValues) dic.Key.Enabled = dic.Value;
+                    foreach (var dic in originalValues) dic.Key.Enabled = dic.Value;
 
-                DownloadButton.Enabled = true;
+                    DownloadButton.Enabled = true;
+                }
+                catch (Exception ex)
+                {
+                    if (File.Exists(ffmpegTempPath))
+                    { 
+                        File.Delete(ffmpegTempPath); 
+                    }
+
+                    MessageBox.Show("There was an error downloading FFMPEG.\n\n" + ex.ToString(), Application.ProductName, MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    Environment.Exit(0);
+                }
             }
         }
 
