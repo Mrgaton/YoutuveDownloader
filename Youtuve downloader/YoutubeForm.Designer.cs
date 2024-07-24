@@ -1,5 +1,5 @@
 ﻿
-namespace Youtuve_downloader
+namespace Youtuve_Downloader
 {
     partial class YouTubeForm
     {

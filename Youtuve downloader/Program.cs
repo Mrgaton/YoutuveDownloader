@@ -11,7 +11,7 @@ using Youtube_downloader;
 using YoutubeExplode;
 using YoutubeExplode.Common;
 
-namespace Youtuve_downloader
+namespace Youtuve_Downloader
 {
     internal static class Program
     {

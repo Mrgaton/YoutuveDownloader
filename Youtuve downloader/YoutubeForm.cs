@@ -17,7 +17,7 @@ using YoutubeExplode.Videos;
 using YoutubeExplode.Videos.ClosedCaptions;
 using YoutubeExplode.Videos.Streams;
 
-namespace Youtuve_downloader
+namespace Youtuve_Downloader
 {
     public partial class YouTubeForm : Form
     {
@@ -266,6 +266,12 @@ namespace Youtuve_downloader
 
         private static string LastVideo { get; set; } = string.Empty;
 
+        private static Dictionary<string, int> CodecOrder = new Dictionary<string, int>()
+        {
+            {"av01", 1 },
+            {"vp9", 2 },
+            {"avc1", 3},
+        };
         private async void YoutubeLinkTextBox_TextChanged(object sender, EventArgs e)
         {
             DownloadButton.Enabled = false;
@@ -308,7 +314,16 @@ namespace Youtuve_downloader
                 currentStreamManifest = await youtube.Videos.Streams.GetManifestAsync(currentVideo.Id);
 
                 audioStreamsInfo = currentStreamManifest.GetAudioOnlyStreams().OrderByDescending(c => c.Bitrate.BitsPerSecond);
-                videoStreamsInfo = currentStreamManifest.GetVideoOnlyStreams().OrderByDescending(c => c.Bitrate.BitsPerSecond);
+
+                videoStreamsInfo = currentStreamManifest.GetVideoOnlyStreams().OrderByDescending(c => c.VideoResolution.Height).ThenBy(c => {
+                    string codec = c.VideoCodec.Split('.')[0];
+
+                    if (CodecOrder.TryGetValue(codec, out int order))
+                        return order;
+
+                    return 0;
+                });
+
                 muxedStreamsInfo = currentStreamManifest.GetMuxedStreams().OrderByDescending(c => c.Bitrate.BitsPerSecond);
 
                 UpdateStreams();
@@ -320,7 +335,7 @@ namespace Youtuve_downloader
                 foreach (var t in trackInfos)
                 {
                     //Clipboard.SetText(t.Url);
-                    Console.WriteLine(t.Language);
+                    Console.Write(t.Language.ToString() + ':');
                     Console.WriteLine(t.Url);
                     Console.WriteLine();
                 }
@@ -359,6 +374,10 @@ namespace Youtuve_downloader
         private int oldVideoIndex = 0;
         private int oldAudioIndex = 0;
 
+        public static string PrettifyCodec(string codec)
+        {
+            return codec.Replace("av01", "AV1").Replace("avc1", "AVC").ToUpper();
+        }
         private async void UpdateStreams()
         {
             if (currentVideo == null) return;
@@ -371,11 +390,11 @@ namespace Youtuve_downloader
 
             if (FormatComboBoxMediaType == MediaType.MUX)
             {
-                foreach (var stream in muxedStreamsInfo) VideoStreamsComboBox.Items.Add(stream.VideoResolution + "|" + stream.Size + "|" + stream.VideoCodec.Split('.')[0]);
+                foreach (var stream in muxedStreamsInfo) VideoStreamsComboBox.Items.Add(stream.VideoResolution + "|" + stream.Size + "|" + PrettifyCodec(stream.VideoCodec.Split('.')[0]));
             }
             else
             {
-                foreach (var stream in videoStreamsInfo) VideoStreamsComboBox.Items.Add(stream.VideoResolution + "|" + stream.Size + "|" + stream.VideoCodec.Split('.')[0]);
+                foreach (var stream in videoStreamsInfo) VideoStreamsComboBox.Items.Add(stream.VideoResolution + "|" + stream.Size + "|" + PrettifyCodec(stream.VideoCodec.Split('.')[0]));
             }
 
             switch (FormatComboBoxMediaType)
@@ -541,6 +560,7 @@ namespace Youtuve_downloader
                 try
                 {
                     string filePath = Path.Combine(Path.GetTempPath(), ((uint)s.Url.GetHashCode()) + ".srt");
+
                     string subtitlesData = SubRipSubtitleConvertor.XmlToSrt(Encoding.UTF8.GetString(await wc.DownloadDataTaskAsync(s.Url)));
 
                     //Console.WriteLine(subtitlesData);
