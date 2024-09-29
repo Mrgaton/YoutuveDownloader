@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Globalization;
+using System.Net;
 using System.Text;
 using System.Xml;
 
@@ -14,6 +15,7 @@ namespace Youtube_downloader
             doc.LoadXml(xml);
 
             XmlNodeList textNodes = doc.GetElementsByTagName("text");
+
             StringBuilder sb = new StringBuilder();
 
             int index = 1;
@@ -22,7 +24,7 @@ namespace Youtube_downloader
             {
                 string start = node.Attributes["start"].Value;
                 string dur = node.Attributes["dur"].Value;
-                string text = node.InnerText;
+                string text = WebUtility.HtmlDecode(node.InnerText);
 
                 sb.AppendLine((index++).ToString());
                 sb.AppendLine($"{ConvertSecondsToTimeFormat(double.Parse(start, CultureInfo.InvariantCulture))} --> {ConvertSecondsToTimeFormat(double.Parse(start, CultureInfo.InvariantCulture) + double.Parse(dur, CultureInfo.InvariantCulture))}");

@@ -17,7 +17,7 @@ namespace Youtube_downloader
 
             foreach (var k in data)
             {
-                if (string.IsNullOrEmpty(k) || k.StartsWith(key + '=')) continue;
+                if (string.IsNullOrEmpty(k) || k.StartsWith(key + '=', StringComparison.InvariantCultureIgnoreCase)) continue;
 
                 sb.AppendLine(k);
             }

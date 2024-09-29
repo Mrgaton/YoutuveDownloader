@@ -8,7 +8,7 @@ namespace Youtube_downloader
     {
         public static async Task WaitForExitAsync(this Process process, CancellationToken cancellationToken = default)
         {
-            while (!process.HasExited)
+            while (!process.HasExited && !cancellationToken.IsCancellationRequested)
             {
                 await Task.Delay(250, cancellationToken);
             }
