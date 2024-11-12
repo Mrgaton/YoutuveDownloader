@@ -117,6 +117,16 @@ namespace Youtuve_Downloader
                 this.AudioCodecsComboBox.SelectedIndex = 2;
             }
 
+            if (args.Length == 0)
+            {
+                string clipboard = Clipboard.GetText();
+
+                if (IsYoutubeID(clipboard))
+                {
+                    YoutubeLinkTextBox.Text = clipboard;
+                }
+            }
+
             ClipboardChanged += (object e, ClipboardChangedEventArgs i) =>
             {
                 if (i.DataObject.GetDataPresent(DataFormats.Text))
