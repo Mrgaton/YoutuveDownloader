@@ -14,6 +14,7 @@ namespace Youtube_downloader.Updater
     internal class GithubUpdater
     {
         [DllImport("wininet.dll")] private static extern bool InternetGetConnectedState(out int Description, int ReservedValue);
+
         public static bool CheckNet() => InternetGetConnectedState(out int s, 0);
 
         private static string Username = "Mrgaton";
