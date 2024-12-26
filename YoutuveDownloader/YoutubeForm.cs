@@ -26,7 +26,7 @@ namespace Youtuve_Downloader
         private static WebClient wc = new WebClient();
 
         public static YoutubeClient youtube = new YoutubeClient(new HttpClient(new HttpClientHandler() { AutomaticDecompression = DecompressionMethods.Deflate | DecompressionMethods.GZip}), GetCookies());
-        private static IReadOnlyList<Cookie>? GetCookies()
+        private static IReadOnlyList<Cookie> GetCookies()
         {
             string cookiesFile = "cookies.txt";
 
@@ -35,7 +35,7 @@ namespace Youtuve_Downloader
                 return File.ReadAllText(cookiesFile).Trim(['\'','"']).Split(';').Select(el => el.Split('=')).Select(c => new Cookie(c[0], string.Join("=",c.Skip(1)))) as IReadOnlyList<Cookie>;
             }
 
-            return null;
+            return [];
         }
         public static Video CurrentVideo { get; set; }
         public static StreamManifest CurrentStreamManifest { get; set; }
