@@ -4,9 +4,9 @@ using System.Net;
 using System.Text;
 using System.Xml;
 
-namespace Youtube_downloader
+namespace Youtuve_downloader
 {
-    internal class SubRipSubtitleConvertor
+    internal static class SubRipSubtitleConvertor
     {
         public static string XmlToSrt(string xml)
         {

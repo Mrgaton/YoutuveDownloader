@@ -2,7 +2,7 @@
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace Youtube_downloader
+namespace Youtuve_downloader
 {
     public static class ProcessExtensions
     {

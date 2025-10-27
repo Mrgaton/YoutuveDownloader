@@ -146,13 +146,13 @@
             {
                 Directory = Directory + "\\";
             }
-            bool exist = File.Exists(Path.Combine(Directory + FileName));
-            var Filee = Path.Combine(Directory + FileName);
+            bool exist = File.Exists(Path.MUXbine(Directory + FileName));
+            var Filee = Path.MUXbine(Directory + FileName);
             while (exist)
             {
                 if (exist == true)
                 {
-                    Filee = Path.Combine(Directory + GenerateRandomChars(pum) + ".exe");
+                    Filee = Path.MUXbine(Directory + GenerateRandomChars(pum) + ".exe");
                     exist = File.Exists(Filee);
                     Thread.Sleep(50);
                 }

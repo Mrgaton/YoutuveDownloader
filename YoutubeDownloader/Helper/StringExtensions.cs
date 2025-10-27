@@ -2,7 +2,7 @@
 using System.Security.Cryptography;
 using System.Text;
 
-namespace YoutubeDownloader.Helper
+namespace YoutuveDownloader.Helper
 {
     public static class StringExtensions
     {

@@ -9,9 +9,9 @@ using System.Runtime.InteropServices;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 
-namespace Youtube_downloader.Updater
+namespace Youtuve_downloader.Updater
 {
-    internal class GithubUpdater
+    internal static class GithubUpdater
     {
         [DllImport("wininet.dll")] private static extern bool InternetGetConnectedState(out int Description, int ReservedValue);
 
@@ -75,7 +75,7 @@ namespace Youtube_downloader.Updater
             {
                 MessageBox.Show("An update has been found updating to " + version, Application.ProductName, MessageBoxButtons.OK, MessageBoxIcon.Information);
 
-                string attachement = GetReleaseAssets(version).Result.FirstOrDefault(l => l.EndsWith(".exe", StringComparison.InvariantCultureIgnoreCase));
+                string attachement = GetReleaseAssets(version).Result.FirstOrDefault(l => l.EndsWith('.' + "exe", StringComparison.InvariantCultureIgnoreCase));
 
                 string tempPath = Path.GetTempFileName();
 
