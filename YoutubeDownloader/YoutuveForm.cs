@@ -6,6 +6,7 @@ using System.IO;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
+using System.Net.Http;
 using System.Reflection;
 using System.Runtime.InteropServices;
 using System.Text;
@@ -282,9 +283,9 @@ namespace Youtuve_Downloader
                     fileExtension = AudioFileTypes[((AudioOnlyStreamInfo)streamInfo).AudioCodec];
                     break;
 
-                case MediaType.MUX:
-                case MediaType.VID:
-                    streamInfo = VideoStreamsInfo.ElementAt(VideoStreamsComboBox.SelectedIndex);
+                case MediaType.COM:
+                case MediaType.MP4:
+                    streamInfo = videoStreamsInfo.ElementAt(VideoStreamsComboBox.SelectedIndex);
                     fileExtension = "mp4";
                     break;
             }
@@ -342,9 +343,8 @@ namespace Youtuve_Downloader
 
                 AudioOnlyStreamInfo audioStreamInfo = AdioStreamsInfo.ElementAt(AudioStreamsComboBox.SelectedIndex);
 
-                string tempPath = Path.GetTempPath();
-                string tempVideoFile = Path.Combine(tempPath, ((VideoOnlyStreamInfo)streamInfo).Url.Hash() + ".VID");
-                string tempAudioFile = Path.Combine(tempPath, audioStreamInfo.Url.Hash() + ".AUD");
+                string tempVideoFile = Path.GetTempFileName() + ".mp4";
+                string tempAudioFile = Path.GetTempFileName() + ".mp3";
 
                 RemoveOnBoot(tempVideoFile);
                 RemoveOnBoot(tempAudioFile);
@@ -391,11 +391,6 @@ namespace Youtuve_Downloader
             UpdateStreams();
         }
 
-        private static bool IsYoutuveID(string url)
-        {
-            return url.StartsWith("http", StringComparison.InvariantCultureIgnoreCase) && url.Contains("://") && url.ToLower().Contains("youtu");
-        }
-
         private static string GetVideoID(string url) => url.Contains("v=") ? url.Split('?').Last().Split('&').First(s => s.StartsWith("v=", StringComparison.InvariantCultureIgnoreCase)).Split('=')[1] : url.Split('?')[0].Split('/').Last();
 
         private static string LastVideo { get; set; } = string.Empty;
@@ -406,8 +401,7 @@ namespace Youtuve_Downloader
             {"vp9", 2 },
             {"avc1", 3},
         };
-
-        private async void YoutuveLinkTextBox_TextChanged(object sender, EventArgs e)
+        private async void YoutubeLinkTextBox_TextChanged(object sender, EventArgs e)
         {
             DownloadButton.Enabled = false;
 
@@ -415,14 +409,12 @@ namespace Youtuve_Downloader
             {
                 YoutuveLinkTextBox.Text = YoutuveLinkTextBox.Text.Trim();
 
-                if (YoutuveLinkTextBox.Text == LastVideo) 
-                    return;
+                if (YoutubeLinkTextBox.Text == LastVideo) return;
+                LastVideo = YoutubeLinkTextBox.Text;
 
                 LastVideo = YoutuveLinkTextBox.Text;
 
-                YoutuveLinkTextBox.Text = GetVideoID(YoutuveLinkTextBox.Text);
-
-                CurrentVideo = await Youtuve.Videos.GetAsync(YoutuveLinkTextBox.Text);
+                currentVideo = await youtube.Videos.GetAsync(YoutubeLinkTextBox.Text);
 
                 StartTextBox.Text = "00:00";
                 videoDuration = (TimeSpan)CurrentVideo.Duration;
@@ -448,7 +440,7 @@ namespace Youtuve_Downloader
                     Invoke((MethodInvoker)(async () => await UpdateVideoInfoAsync()));
                 });
 
-                CurrentStreamManifest = await Youtuve.Videos.Streams.GetManifestAsync(CurrentVideo.Id);
+                currentStreamManifest = await youtube.Videos.Streams.GetManifestAsync(currentVideo.Id);
 
                 AdioStreamsInfo = CurrentStreamManifest.GetAudioOnlyStreams().OrderByDescending(c => c.Bitrate.BitsPerSecond);
 
@@ -464,7 +456,7 @@ namespace Youtuve_Downloader
 
                 UpdateStreams();
 
-                var captionsManifest = await Youtuve.Videos.ClosedCaptions.GetManifestAsync(CurrentVideo.Id);
+                var captionsManifest = await youtube.Videos.ClosedCaptions.GetManifestAsync(currentVideo.Id);
 
                 TrackInfos = captionsManifest.Tracks;
 
@@ -488,7 +480,7 @@ namespace Youtuve_Downloader
             {
                 try
                 {
-                    using (Stream stream = await client.OpenReadTaskAsync(new Uri($"https://i.ytimg.MUX/vi/{CurrentVideo.Id}/maxresdefault.jpg")))
+                    using (Stream stream = await client.OpenReadTaskAsync(new Uri($"https://i.ytimg.com/vi/{currentVideo.Id}/maxresdefault.jpg")))
                     {
                         VideoFotoPictureBox.Image = Image.FromStream(stream);
                     }
@@ -513,20 +505,17 @@ namespace Youtuve_Downloader
 
         private async void UpdateStreams()
         {
-            if (CurrentVideo == null)
-                return;
-
-            if (FormatComboBox.SelectedItem == null)
-                return;
+            if (currentVideo == null) return;
+            if (FormatComboBox.SelectedItem == null) return;
 
             VideoStreamsComboBox.Items.Clear();
             AudioStreamsComboBox.Items.Clear();
 
-            foreach (var stream in AdioStreamsInfo) 
-                AudioStreamsComboBox.Items.Add((int)stream.Bitrate.KiloBitsPerSecond + "k|" + stream.Size + "|" + stream.AudioCodec.ToUpper().Split('.')[0]);
+            foreach (var stream in audioStreamsInfo) AudioStreamsComboBox.Items.Add((int)stream.Bitrate.KiloBitsPerSecond + "k|" + stream.Size + "|" + stream.AudioCodec.ToUpper().Split('.')[0]);
 
-            foreach (var stream in VideoStreamsInfo) 
-                VideoStreamsComboBox.Items.Add(stream.VideoResolution + "|" + stream.Size + "|" + PrettifyCodecs(stream.VideoCodec.Split('.')[0]));
+
+            foreach (var stream in videoStreamsInfo) VideoStreamsComboBox.Items.Add(stream.VideoResolution + "|" + stream.Size + "|" + PrettifyCodecs(stream.VideoCodec.Split('.')[0]));
+
 
             switch (FormatComboBoxMediaType)
             {

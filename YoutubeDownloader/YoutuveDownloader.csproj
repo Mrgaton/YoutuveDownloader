@@ -247,14 +247,15 @@
       <Private>True</Private>
       <Private>True</Private>
     </Reference>
-    <Reference Include="YoutubeExplode, Version=6.5.6.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\packages\YoutubeExplode.6.5.6\lib\netstandard2.0\YoutubeExplode.dll</HintPath>
+    <Reference Include="YoutubeExplode, Version=6.4.2.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\YoutubeExplode.6.4.2\lib\net461\YoutubeExplode.dll</HintPath>
     </Reference>
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Helper\Config.cs" />
     <Compile Include="Helper\FFMPEGDownloader.cs" />
     <Compile Include="Helper\ProcessExtensions.cs" />
+    <Compile Include="Helper\StringExtensions.cs" />
     <Compile Include="Helper\StringExtensions.cs" />
     <Compile Include="Helper\SubRipSubtitleConvertor.cs" />
     <Compile Include="Updater\GithubUpdater.cs" />
